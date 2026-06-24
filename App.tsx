@@ -935,10 +935,6 @@ const App: FC = () => {
               isInputFocused={isInputFocused}
               onFocus={() => setIsInputFocused(true)}
               onBlur={() => setIsInputFocused(false)}
-              turnsUsed={profile ? profile.total_turns_used : config.turnsUsed}
-              totalTurnsAllowed={config.totalTurnsAllowed}
-              creditsRemaining={profile ? profile.credits_remaining : config.creditsRemaining}
-              isLifetime={profile ? profile.is_lifetime : config.isLifetime}
             />
           } />
 
@@ -991,10 +987,6 @@ const App: FC = () => {
                       isInputFocused={isInputFocused}
                       onFocus={() => setIsInputFocused(true)}
                       onBlur={() => setIsInputFocused(false)}
-                      turnsUsed={profile ? profile.total_turns_used : config.turnsUsed}
-                      totalTurnsAllowed={config.totalTurnsAllowed}
-                      creditsRemaining={profile ? profile.credits_remaining : config.creditsRemaining}
-                      isLifetime={profile ? profile.is_lifetime : config.isLifetime}
                     />
                   ) : (
                     session.stage !== WorkflowStage.ERROR && (

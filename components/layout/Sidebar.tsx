@@ -1,7 +1,6 @@
 import { FC, useState, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
-  Shield,
   Plus,
   Search,
   MessageSquare,
@@ -98,10 +97,11 @@ export const Sidebar: FC<SidebarProps> = ({
 
       {/* Logo */}
       <button className="sidebar-logo" onClick={() => navigate('/')}>
-        <span className="sidebar-logo-mark">
-          <Shield className="sidebar-logo-icon" />
-        </span>
-        <span className="sidebar-logo-text">FAINL</span>
+        <video
+          src="/FAINLANI.mp4"
+          autoPlay muted loop playsInline
+          className="sidebar-logo-video"
+        />
       </button>
 
       {/* New chat */}

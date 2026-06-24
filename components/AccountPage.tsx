@@ -423,7 +423,7 @@ export const AccountPage: FC<AccountPageProps> = ({
                 </p>
                 {!searchQuery && (
                   <button onClick={() => navigate('/')} className="px-5 py-2.5 bg-black dark:bg-white text-white dark:text-black text-xs font-black uppercase tracking-widest hover:bg-[var(--action)] hover:text-black transition-all">
-                    Vraag het aan de Raad
+                    Nieuwe sessie starten
                   </button>
                 )}
               </div>
