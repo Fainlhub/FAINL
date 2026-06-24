@@ -10,4 +10,11 @@ if (!supabaseAnonKey) {
   console.error('VITE_SUPABASE_ANON_KEY is missing! Check your GitHub Variables/Secrets.');
 }
 
-export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '');
+export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '', {
+  auth: {
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    flowType: 'implicit',
+    persistSession: true,
+  },
+});

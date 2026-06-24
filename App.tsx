@@ -53,6 +53,8 @@ const UseCaseHRPage = lazy(() => import("./components/UseCaseHRPage").then(m => 
 const UseCaseFinancePage = lazy(() => import("./components/UseCaseFinancePage").then(m => ({ default: m.UseCaseFinancePage })));
 const CompareVsChatGPTPage = lazy(() => import("./components/CompareVsChatGPTPage").then(m => ({ default: m.CompareVsChatGPTPage })));
 const CompareMultiModelPage = lazy(() => import("./components/CompareMultiModelPage").then(m => ({ default: m.CompareMultiModelPage })));
+const AuthCallbackPage = lazy(() => import("./components/AuthCallbackPage").then(m => ({ default: m.AuthCallbackPage })));
+const NotFoundPage = lazy(() => import("./components/NotFoundPage").then(m => ({ default: m.NotFoundPage })));
 import {
   Menu,
   X as CloseIcon,
@@ -69,7 +71,6 @@ import {
   useLocation,
   Routes,
   Route,
-  Navigate,
   Link,
 } from "react-router-dom";
 import { SEO } from "./components/SEO";
@@ -1330,6 +1331,7 @@ const App: FC = () => {
 
           {/* Auth */}
           <Route path="/login" element={<LoginPage onLoginSuccess={() => navigate('/')} />} />
+          <Route path="/auth/callback" element={<AuthCallbackPage />} />
 
           {/* Legal */}
           <Route path="/privacy" element={<PrivacyPolicyPage />} />
@@ -1355,8 +1357,8 @@ const App: FC = () => {
           <Route path="/vergelijken/fainl-vs-chatgpt" element={<CompareVsChatGPTPage />} />
           <Route path="/vergelijken/ai-modellen-vergelijken" element={<CompareMultiModelPage />} />
 
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          {/* 404 */}
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
         </Suspense>
       </main>

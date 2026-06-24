@@ -1,5 +1,7 @@
-import { useState, FC } from 'react';
+import { useState, FC, FormEvent } from 'react';
 import { Shield, Github, Mail, ArrowRight, Loader2, Sparkles } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { getAuthRedirectUrl, normalizePostAuthPath } from '../services/authRedirect';
 import { supabase } from '../services/supabaseClient';
 
 interface LoginPageProps {
@@ -7,6 +9,7 @@ interface LoginPageProps {
 }
 
 export const LoginPage: FC<LoginPageProps> = ({ onLoginSuccess }) => {
+  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
@@ -17,7 +20,7 @@ export const LoginPage: FC<LoginPageProps> = ({ onLoginSuccess }) => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: window.location.origin
+          redirectTo: getAuthRedirectUrl(normalizePostAuthPath(searchParams.get('next')))
         }
       });
       if (error) throw error;
@@ -28,7 +31,7 @@ export const LoginPage: FC<LoginPageProps> = ({ onLoginSuccess }) => {
     }
   };
 
-  const handleEmailLogin = async (e: React.FormEvent) => {
+  const handleEmailLogin = async (e: FormEvent) => {
     e.preventDefault();
     if (!email) return;
 
@@ -37,7 +40,7 @@ export const LoginPage: FC<LoginPageProps> = ({ onLoginSuccess }) => {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: window.location.origin,
+          emailRedirectTo: getAuthRedirectUrl(normalizePostAuthPath(searchParams.get('next'))),
         },
       });
       if (error) throw error;

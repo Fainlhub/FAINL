@@ -41,6 +41,27 @@ De app draait op `http://localhost:3000`.
 
 ---
 
+## Google auth
+
+De login flow stuurt Google/Supabase terug naar `/auth/callback`.
+
+Voor lokaal gebruik:
+
+- `.env`: `VITE_SITE_URL=http://localhost:3000`
+- Supabase Auth Redirect URLs: `http://localhost:3000/auth/callback`
+- Google OAuth Authorized JavaScript origins: `http://localhost:3000`
+- Google OAuth Authorized redirect URI: de Supabase callback URL uit de Google provider pagina, meestal `https://<project-ref>.supabase.co/auth/v1/callback`
+
+Voor productie/Vercel:
+
+- Vercel env: `VITE_SITE_URL=https://fainl.com`
+- Supabase Site URL: `https://fainl.com`
+- Supabase Auth Redirect URLs: `https://fainl.com/auth/callback`
+- Google OAuth Authorized JavaScript origins: `https://fainl.com`
+- Google OAuth Authorized redirect URI: dezelfde Supabase callback URL als hierboven
+
+---
+
 ## Projectstructuur
 
 ```
