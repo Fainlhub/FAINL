@@ -1,0 +1,283 @@
+
+<!DOCTYPE html>
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!-- Primary Meta Tags -->
+    <title>FAINL — Multi-Agent AI Consensus Engine</title>
+    <meta name="title" content="FAINL — Multi-Agent AI Consensus Engine" />
+    <meta name="description" content="FAINL laat je vraag tegelijkertijd door meerdere AI-modellen analyseren — Gemini, GPT-4, Claude, Grok en meer — en levert één gezaghebbend, onbevooroordeeld antwoord. Krijg AI-consensus in seconden." />
+    <meta name="keywords" content="AI consensus, multi-agent AI, AI debat, meerdere AI-modellen, GPT-4, Claude, Gemini, Grok, Llama, AI vergelijking, besluitvorming, FAINL, AI-orkestratie" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="author" content="FAINL" />
+    <meta name="theme-color" content="#080812" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="format-detection" content="telephone=no" />
+
+    <!-- Language & Region -->
+    <link rel="alternate" hreflang="nl" href="https://fainl.app/" />
+    <link rel="alternate" hreflang="x-default" href="https://fainl.app/" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://fainl.app/" />
+    <meta property="og:title" content="FAINL — Multi-Agent AI Consensus Engine" />
+    <meta property="og:description" content="Stel een vraag. Meerdere AI-modellen beraadslagen, debatteren en leveren één gezaghebbend oordeel. Aangedreven door Gemini, GPT-4, Claude, Grok, Llama en meer." />
+    <meta property="og:image" content="https://fainl.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="FAINL — Multi-Agent AI Consensus Engine" />
+    <meta property="og:site_name" content="FAINL" />
+    <meta property="og:locale" content="nl_NL" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://fainl.app/" />
+    <meta name="twitter:title" content="FAINL — Multi-Agent AI Consensus Engine" />
+    <meta name="twitter:description" content="Stel een vraag. Meerdere AI-modellen beraadslagen, debatteren en leveren één gezaghebbend oordeel." />
+    <meta name="twitter:image" content="https://fainl.app/og-image.png" />
+
+    <!-- Canonical -->
+    <link rel="canonical" href="https://fainl.app/" />
+
+    <!-- Favicons -->
+    <link rel="icon" href="/favicons/favicon.ico" sizes="48x48" />
+    <link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-32x32.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="FAINL" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="manifest" href="/favicons/site.webmanifest" />
+
+    <!-- Fonts: preload critical font then load stylesheet with swap -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'" />
+    <noscript>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap" />
+    </noscript>
+
+    <!-- Performance Hints -->
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+    <link rel="dns-prefetch" href="https://api.dicebear.com" />
+
+    <!-- Structured Data: Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "FAINL",
+      "url": "https://fainl.app",
+      "logo": "https://fainl.app/favicons/icon-512.png",
+      "sameAs": []
+    }
+    </script>
+
+    <!-- Structured Data: WebSite (enables sitelinks search box) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "FAINL",
+      "url": "https://fainl.app",
+      "inLanguage": "nl",
+      "description": "Multi-Agent AI Consensus Engine",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://fainl.app/?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+
+    <!-- Structured Data: SoftwareApplication -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "FAINL",
+      "url": "https://fainl.app",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web Browser",
+      "inLanguage": "nl",
+      "description": "FAINL is een multi-agent AI consensus engine die je vraag tegelijkertijd door meerdere AI-modellen laat analyseren en één gezaghebbend, onbevooroordeeld oordeel levert.",
+      "screenshot": "https://fainl.app/og-image.png",
+      "datePublished": "2025-01-01",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "EUR",
+        "description": "Gratis tier beschikbaar met je eigen API-sleutel"
+      },
+      "featureList": [
+        "Multi-agent AI consensus",
+        "Ondersteuning voor Gemini, GPT-4, Claude, Grok, Llama, Mistral",
+        "Live AI-debatruimte",
+        "Voorzitter syntheseverdikt",
+        "Lokale versleutelde opslag",
+        "Geen data-deling"
+      ],
+      "creator": {
+        "@type": "Organization",
+        "name": "FAINL",
+        "url": "https://fainl.app"
+      }
+    }
+    </script>
+
+    <!-- Structured Data: FAQPage (boosts rich snippets) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Wat is FAINL?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "FAINL is een multi-agent AI consensus engine die je vraag tegelijkertijd door meerdere AI-modellen laat analyseren — waaronder Gemini, GPT-4, Claude, Grok en Llama — en één gezaghebbend, onbevooroordeeld oordeel levert."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is mijn data privé?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Ja. Alle sessiegegevens en API-sleutels worden uitsluitend lokaal in je browser opgeslagen. FAINL gebruikt een zero-knowledge architectuur — je data verlaat nooit je apparaat."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Welke AI-modellen ondersteunt FAINL?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "FAINL ondersteunt Google Gemini, OpenAI GPT-4, Anthropic Claude, xAI Grok, Meta Llama, Mistral, DeepSeek, en meer via OpenRouter."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Hoeveel kost FAINL?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "FAINL biedt een gratis tier aan wanneer je je eigen API-sleutels gebruikt. Premium pakketten zijn beschikbaar voor gebruikers die extra functionaliteit en hogere limieten willen."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Hoe werkt AI-consensus?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Je stelt een vraag, meerdere AI-modellen analyseren deze onafhankelijk, gaan in debat over hun bevindingen, en een voorzitter-model syntheseert alle perspectieven tot één gefundeerd eindoordeel."
+          }
+        }
+      ]
+    }
+    </script>
+
+    <!-- Structured Data: BreadcrumbList -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://fainl.app/"
+        }
+      ]
+    }
+    </script>
+    <script type="module" crossorigin src="/assets/index-IuI4ndfj.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/vendor-react-Bbft6den.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-misc-XUbwqqDI.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-markdown-Dre5vL9y.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-DYQuVh0h.css">
+  </head>
+  <body>
+    <!-- Static HTML content for SEO crawlers (hidden once React mounts) -->
+    <div id="root">
+      <div id="seo-fallback" style="max-width:800px;margin:0 auto;padding:2rem;font-family:system-ui,sans-serif;color:#e4e4e7;background:#080812;">
+        <header>
+          <h1>FAINL — Multi-Agent AI Consensus Engine</h1>
+          <p>Stel je vraag — zeven AI-modellen debatteren en leveren één gefundeerde conclusie. Niet één mening, maar een echt antwoord.</p>
+        </header>
+        <main>
+          <section>
+            <h2>Wat is FAINL?</h2>
+            <p>FAINL is een multi-agent AI consensus engine die je vraag tegelijkertijd door meerdere AI-modellen laat analyseren — waaronder Gemini, GPT-4, Claude, Grok en Llama — en één gezaghebbend, onbevooroordeeld oordeel levert.</p>
+          </section>
+          <section>
+            <h2>Hoe werkt het?</h2>
+            <ol>
+              <li><strong>Stel een vraag</strong> — typ je vraag in het invoerveld.</li>
+              <li><strong>AI-raad analyseert</strong> — meerdere AI-modellen analyseren je vraag onafhankelijk.</li>
+              <li><strong>Debat</strong> — de modellen beraadslagen en debatteren over hun bevindingen.</li>
+              <li><strong>Eindoordeel</strong> — een voorzitter-model syntheseert alle perspectieven tot één gefundeerd antwoord.</li>
+            </ol>
+          </section>
+          <section>
+            <h2>Ondersteunde AI-modellen</h2>
+            <ul>
+              <li>Google Gemini</li>
+              <li>OpenAI GPT-4</li>
+              <li>Anthropic Claude</li>
+              <li>xAI Grok</li>
+              <li>Meta Llama</li>
+              <li>Mistral</li>
+              <li>DeepSeek</li>
+            </ul>
+          </section>
+          <section>
+            <h2>Privacy & Veiligheid</h2>
+            <p>Alle sessiegegevens en API-sleutels worden uitsluitend lokaal in je browser opgeslagen. FAINL gebruikt een zero-knowledge architectuur — je data verlaat nooit je apparaat.</p>
+          </section>
+          <section>
+            <h2>Veelgestelde vragen</h2>
+            <dl>
+              <dt>Is mijn data privé?</dt>
+              <dd>Ja. FAINL slaat alles lokaal op in je browser. Er worden geen gegevens naar onze servers gestuurd.</dd>
+              <dt>Hoeveel kost FAINL?</dt>
+              <dd>FAINL biedt een gratis tier aan met je eigen API-sleutels. Premium pakketten zijn beschikbaar voor extra functionaliteit.</dd>
+              <dt>Welke AI-modellen worden ondersteund?</dt>
+              <dd>Gemini, GPT-4, Claude, Grok, Llama, Mistral, DeepSeek en meer via OpenRouter.</dd>
+            </dl>
+          </section>
+        </main>
+        <footer>
+          <nav aria-label="Voettekst navigatie">
+            <p>&copy; 2025 FAINL. Alle rechten voorbehouden.</p>
+          </nav>
+        </footer>
+      </div>
+    </div>
+
+    <!-- Fallback for non-JS browsers -->
+    <noscript>
+      <style>
+        #seo-fallback { display: block !important; }
+      </style>
+      <div style="text-align:center;padding:2rem;background:#080812;color:#e4e4e7;">
+        <h2>JavaScript is vereist</h2>
+        <p>FAINL vereist JavaScript om te functioneren. Schakel JavaScript in om de applicatie te gebruiken.</p>
+      </div>
+    </noscript>
+
+    <!-- App bundle -->
+
+    <!-- Google Analytics — loaded AFTER content, non-blocking -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-9DL89GBSH8"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-9DL89GBSH8', { send_page_view: true });
+    </script>
+  </body>
+</html>

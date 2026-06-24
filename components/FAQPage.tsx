@@ -204,7 +204,7 @@ export const FAQPage: FC = () => {
       </div>
 
       <div className="mt-20 text-center">
-        <p className="text-base font-black text-black/20 dark:text-white/20 uppercase tracking-[0.5em]">
+        <p className="text-base font-black text-black/40 dark:text-white/35 uppercase tracking-[0.5em]">
           {language === 'nl' ? 'Systeemrevisie 4.2.0 • Consensus Prioriteit 0' : 'System Revision 4.2.0 • Consensus Priority 0'}
         </p>
       </div>

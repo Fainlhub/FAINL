@@ -403,7 +403,7 @@ export const LandingPage: FC = () => {
                 <div className="text-5xl md:text-7xl font-black text-black group-hover:text-[var(--ink)] transition-colors duration-500 mb-2 md:mb-4">02</div>
                 <h3 className="text-xl md:text-2xl font-black uppercase tracking-tight text-black mb-2 md:mb-4">Collectieve Kracht</h3>
                 <p className="text-base md:text-lg font-bold text-black leading-relaxed">
-                  Wij zetten 5 top-modellen parallel aan het work. Geen beïnvloeding, maar pure, rauwe intelligentie uit verschillende bronnen.
+                  Wij zetten tot 6 top-modellen parallel aan het werk. Geen beïnvloeding, maar pure, rauwe intelligentie uit verschillende bronnen.
                 </p>
               </div>
               <div className="group">
@@ -480,7 +480,7 @@ export const LandingPage: FC = () => {
             {
               img: "/general icons/AI-Analyse-icon.png",
               title: "Parallelle Analyse",
-              desc: "5 AI-modellen worden tegelijk geactiveerd. Ze analyseren je vraag onafhankelijk van elkaar om tunnelvisie te voorkomen.",
+              desc: "Tot 6 AI-modellen worden tegelijk geactiveerd. Ze analyseren je vraag onafhankelijk van elkaar om tunnelvisie te voorkomen.",
             },
             {
               img: "/general icons/reading-icon.png",
@@ -608,7 +608,7 @@ export const LandingPage: FC = () => {
             {/* Rows */}
             <div className="divide-y-2 divide-black/5 bg-white dark:bg-black">
               {([
-                ["Parallelle Intelligentie (5+ Modellen)", false, true],
+                ["Parallelle Intelligentie (Tot 6 Modellen)", false, true],
                 ["Live Adversarial Debat", false, true],
                 ["Autonome Foutcorrectie", false, true],
                 [" Chairman's Verdict Synthese", false, true],
@@ -726,7 +726,7 @@ export const LandingPage: FC = () => {
             </button>
           </div>
 
-          <p className="text-center text-lg font-black uppercase tracking-widest text-black/30">
+          <p className="text-center text-lg font-black uppercase tracking-widest text-black/50">
             <Link to="/tokens" className="inline-flex items-center gap-3 underline hover:text-[var(--ink)] transition-colors">
               Bekijk alle pakketten
               <ArrowRight className="w-5 h-5" />

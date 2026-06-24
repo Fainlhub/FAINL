@@ -285,7 +285,7 @@ export const AccountPage: FC<AccountPageProps> = ({
 
             {/* Default Council Members (always visible) */}
             <div className="space-y-2">
-              <p className="text-lg font-black uppercase tracking-widest text-black/30">Standaard Raad</p>
+              <p className="text-lg font-black uppercase tracking-widest text-black/50">Standaard Raad</p>
               {DEFAULT_COUNCIL.map(node => (
                   <div key={node.id} className="p-3 bg-zinc-50 border-2 border-black flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -337,7 +337,7 @@ export const AccountPage: FC<AccountPageProps> = ({
             {/* Custom Nodes List */}
             {config.customNodes?.length > 0 && (
               <div className="space-y-2">
-                <p className="text-base font-black uppercase tracking-widest text-black/30">Jouw Nodes</p>
+                <p className="text-base font-black uppercase tracking-widest text-black/50">Jouw Nodes</p>
                 {config.customNodes.map(node => {
                   const isActive = isNodeActiveInCouncil(node.id);
                   return (
@@ -374,7 +374,7 @@ export const AccountPage: FC<AccountPageProps> = ({
             )}
 
             {(!config.customNodes || config.customNodes.length === 0) && !isAddingNode && (
-              <p className="text-center py-10 text-xl font-black uppercase tracking-[0.2em] text-black/20 italic border-4 border-dashed border-black/10">
+              <p className="text-center py-10 text-xl font-black uppercase tracking-[0.2em] text-black/40 italic border-4 border-dashed border-black/15">
                 Nog geen persoonlijke nodes
               </p>
             )}
@@ -472,15 +472,19 @@ export const AccountPage: FC<AccountPageProps> = ({
             )}
 
             {activeHistory.length === 0 ? (
-              <div className="py-16 text-center bg-white border-4 border-dashed border-[var(--line)] rounded-none shadow-lg">
-                <Database className="w-12 h-12 text-[var(--ink)] mx-auto mb-4" />
-                <p className="font-black uppercase tracking-widest text-[var(--ink)] text-xl mb-2">Lokale Kluis Leeg</p>
-                <p className="text-lg font-bold text-black uppercase tracking-widest text-center px-6">Hier kun je al jouw gestelde vragen inzien en teruglezen.</p>
+              <div className="py-16 text-center bg-white dark:bg-black border-2 md:border-4 border-dashed border-black/20 dark:border-white/20 rounded-none">
+                <div className="w-16 h-16 bg-black/5 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <MessageSquare className="w-8 h-8 text-black/30 dark:text-white/30" />
+                </div>
+                <p className="font-black uppercase tracking-widest text-black dark:text-white text-xl mb-2">Nog geen sessies</p>
+                <p className="text-base font-bold text-black/60 dark:text-white/50 text-center px-6 mb-8 max-w-md mx-auto">
+                  Stel je eerste vraag aan de Raad en vind hier straks al je eerdere sessies en eindoordelen terug.
+                </p>
                 <button
-                  onClick={() => navigate('/mission')}
-                  className="mt-6 px-10 py-5 bg-black text-white border-4 border-black font-black text-lg uppercase tracking-widest hover:bg-[var(--action)] hover:text-black transition-all shadow-md"
+                  onClick={() => navigate('/')}
+                  className="px-8 py-4 bg-black dark:bg-[var(--action)] text-white dark:text-black border-2 border-black font-black text-sm uppercase tracking-widest hover:bg-[var(--action)] hover:text-black transition-all"
                 >
-                  Nieuwe vraag stellen
+                  Vraag het aan de Raad
                 </button>
               </div>
             ) : (
@@ -519,7 +523,7 @@ export const AccountPage: FC<AccountPageProps> = ({
 
           {/* Archived sessions count */}
           {history.filter(s => s.isArchived).length > 0 && (
-            <p className="text-base font-black uppercase tracking-widest text-black/30 text-center">
+            <p className="text-base font-black uppercase tracking-widest text-black/50 text-center">
               {history.filter(s => s.isArchived).length} gearchiveerde sessie(s) verborgen
             </p>
           )}

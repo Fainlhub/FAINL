@@ -149,7 +149,7 @@ export const PaywallModal: FC<PaywallModalProps> = ({
 
         {/* Footer */}
         <div className="p-6 md:p-8 border-t-4 border-black dark:border-white/20 bg-white dark:bg-zinc-950 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-sm font-black text-black/20 dark:text-white/20 uppercase tracking-[0.2em]">
+          <p className="text-sm font-black text-black/50 dark:text-white/40 uppercase tracking-[0.2em]">
             {language === 'nl' ? 'Veilig Afrekenen via Stripe • Versleuteld Protocol 2.5.1' : 'Secure Checkout via Stripe • Encrypted Protocol 2.5.1'}
           </p>
           <button

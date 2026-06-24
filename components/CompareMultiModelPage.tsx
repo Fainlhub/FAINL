@@ -108,7 +108,7 @@ export const CompareMultiModelPage: FC = () => {
       />
 
       <nav aria-label="Breadcrumb" className="max-w-4xl mx-auto px-5 sm:px-8 pt-6">
-        <ol className="flex items-center gap-2 text-base font-black uppercase tracking-widest text-black/30 dark:text-white/30">
+        <ol className="flex items-center gap-2 text-base font-black uppercase tracking-widest text-black/50 dark:text-white/50">
           <li><button type="button" onClick={() => navigate('/')} className="hover:text-black dark:hover:text-white transition-colors">Home</button></li>
           <li>/</li>
           <li className="text-black dark:text-white/50">Vergelijken</li>

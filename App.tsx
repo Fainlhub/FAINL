@@ -84,6 +84,40 @@ import { AppShell } from "./components/layout/AppShell";
 import { ChatHome } from "./components/ChatHome";
 
 
+// ─── Score Parser & Display ──────────────────────────────────────────────────
+const parseVerdictScores = (text: string): { consensus: number | null; confidence: number | null; cleanText: string } => {
+  let consensus: number | null = null;
+  let confidence: number | null = null;
+  let cleanText = text;
+  const consensusMatch = cleanText.match(/<CONSENSUS_SCORE>(\d{1,3})<\/CONSENSUS_SCORE>/);
+  if (consensusMatch) {
+    consensus = Math.min(100, Math.max(0, parseInt(consensusMatch[1], 10)));
+    cleanText = cleanText.replace(consensusMatch[0], '');
+  }
+  const confidenceMatch = cleanText.match(/<CONFIDENCE_SCORE>(\d{1,3})<\/CONFIDENCE_SCORE>/);
+  if (confidenceMatch) {
+    confidence = Math.min(100, Math.max(0, parseInt(confidenceMatch[1], 10)));
+    cleanText = cleanText.replace(confidenceMatch[0], '');
+  }
+  return { consensus, confidence, cleanText: cleanText.trimStart() };
+};
+
+const ScoreBar: FC<{ label: string; value: number; icon: React.ReactNode }> = ({ label, value, icon }) => (
+  <div className="flex-1 min-w-[140px]">
+    <div className="flex items-center gap-2 mb-2">
+      {icon}
+      <span className="text-xs font-black uppercase tracking-widest text-black/60 dark:text-white/50">{label}</span>
+      <span className="ml-auto text-sm font-black text-black dark:text-white">{value}%</span>
+    </div>
+    <div className="h-2 bg-black/10 dark:bg-white/10 rounded-full overflow-hidden">
+      <div
+        className="h-full bg-[var(--action)] rounded-full transition-all duration-1000 ease-out"
+        style={{ width: `${value}%` }}
+      />
+    </div>
+  </div>
+);
+
 // ─── Journey Progress Stepper ────────────────────────────────────────────────
 const JOURNEY_STEPS: { label: string; stages: WorkflowStage[] }[] = [
   { label: 'Analyse',    stages: [WorkflowStage.PROCESSING_COUNCIL] },
@@ -107,7 +141,7 @@ const JourneyStepper: FC<{ stage: WorkflowStage }> = ({ stage }) => {
                 ? 'bg-[var(--action)] border-[var(--line)] text-white'
                 : isPast
                   ? 'bg-black dark:bg-white border-black dark:border-white text-white dark:text-black'
-                  : 'bg-transparent border-black/15 dark:border-white/15 text-black/25 dark:text-white/25'
+                  : 'bg-transparent border-black/15 dark:border-white/15 text-black/40 dark:text-white/40'
             }`}>
               <span className="text-[10px] font-black w-4 h-4 flex items-center justify-center">
                 {isPast && !isActive ? '✓' : String(i + 1)}
@@ -522,7 +556,7 @@ const App: FC = () => {
       setSession((prev: SessionState) => ({
         ...prev,
         stage: WorkflowStage.ERROR,
-        error: "Geen nodes gevonden. Voeg minimaal één node toe aan je raad.",
+        error: "Er zijn geen raadsleden beschikbaar. Voeg minimaal één AI-model toe aan je raad via het dashboard.",
       }));
       return;
     }
@@ -584,7 +618,7 @@ const App: FC = () => {
         setSession((prev: SessionState) => ({
           ...prev,
           stage: WorkflowStage.ERROR,
-          error: 'Geen van de AI-nodes kon een antwoord genereren. Controleer de API-sleutels of probeer het opnieuw.'
+          error: 'Geen van de AI-modellen kon een analyse leveren. Probeer het opnieuw — soms zijn modellen tijdelijk onbereikbaar.'
         }));
         return;
       }
@@ -605,7 +639,7 @@ const App: FC = () => {
       setSession((prev: SessionState) => ({
         ...prev,
         stage: WorkflowStage.ERROR,
-        error: err.message || "Autonomous consensus protocol interrupted."
+        error: err.message || "Er ging iets mis tijdens de analyse. Probeer het opnieuw."
       }));
     }
   };
@@ -692,7 +726,7 @@ const App: FC = () => {
       setSession((prev: SessionState) => ({
         ...prev,
         stage: WorkflowStage.ERROR,
-        error: err.message || "Synthesis failed."
+        error: err.message || "Het eindoordeel kon niet worden opgesteld. Probeer het opnieuw."
       }));
     }
   };
@@ -929,7 +963,7 @@ const App: FC = () => {
                       {/* Intro header */}
                       <div className="text-center mb-12 md:mb-16">
                         <p className="text-base md:text-lg font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-[var(--ink)] mb-4">
-                          {config.activeCouncil.length} AI-modellen analyseren tegelijk · Één eerlijk oordeel
+                          {config.activeCouncil.length} AI-modellen analyseren tegelijk · Eén gefundeerd oordeel
                         </p>
                         <h1 className="text-3xl sm:text-5xl md:text-8xl font-black uppercase tracking-tighter text-black dark:text-white leading-tight">
                           Wat wil jij weten?
@@ -954,13 +988,13 @@ const App: FC = () => {
                             onChange={(e) => setInput(e.target.value.slice(0, 5000))}
                             onFocus={() => setIsInputFocused(true)}
                             onBlur={() => setIsInputFocused(false)}
-                            aria-label="Stel je vraag aan de AI-raad"
+                            aria-label="Stel je vraag aan de FAINL AI-raad van experts"
                             placeholder="Stel je vraag..."
                             maxLength={5000}
                             className="w-full h-full bg-transparent border-none p-0 text-lg sm:text-2xl md:text-4xl font-black text-black dark:text-white placeholder-transparent focus:ring-0 transition-all resize-none absolute top-0 left-0"
                           />
                           {input.length > 3000 && (
-                            <span className="absolute bottom-1 left-0 text-[10px] font-black text-black/25 dark:text-white/20 pointer-events-none">
+                            <span className="absolute bottom-1 left-0 text-[10px] font-black text-black/40 dark:text-white/35 pointer-events-none">
                               {input.length}/5000
                             </span>
                           )}
@@ -969,7 +1003,7 @@ const App: FC = () => {
                           type="button"
                           onClick={() => handleStart()}
                           disabled={!input.trim()}
-                          title="Verstuur vraag"
+                          title="Vraag het aan de Raad"
                           className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 md:bottom-12 md:right-12 p-3 sm:p-4 md:p-8 bg-black dark:bg-[var(--action)] hover:bg-[var(--action)] dark:hover:bg-white disabled:opacity-20 disabled:grayscale text-white dark:text-black rounded-none transition-all hover:scale-105 active:scale-95 shadow-lg overflow-hidden border-2 md:border-4 border-black"
                         >
                           <AnimatedSendIcon />
@@ -1044,30 +1078,39 @@ const App: FC = () => {
                               <button
                                 type="button"
                                 onClick={handleQuickCompose}
-                                className="btn-send w-full justify-center py-4 text-base"
+                                className="btn-send w-full justify-center py-4 text-base flex-col"
                               >
-                                <Gavel className="w-5 h-5" />
-                                Victor's eindoordeel ophalen
+                                <span className="flex items-center gap-2">
+                                  <Gavel className="w-5 h-5" />
+                                  Victor's eindoordeel ophalen
+                                </span>
+                                <span className="text-[11px] font-medium opacity-60 mt-1">Voorzitter Victor weegt alle analyses en levert het definitieve advies</span>
                               </button>
 
-                              <p className="text-xs text-zinc-400 dark:text-zinc-600">of verdiep je eerst</p>
+                              <p className="text-xs text-black/40 dark:text-white/30">of verdiep je eerst</p>
 
                               <div className="flex gap-3 w-full">
                                 <button
                                   type="button"
                                   onClick={() => setIsDebateOpen(true)}
-                                  className="btn-ghost flex-1 justify-center py-3"
+                                  className="btn-ghost flex-1 justify-center py-3 flex-col"
                                 >
-                                  <Swords className="w-4 h-4" />
-                                  Live debat
+                                  <span className="flex items-center gap-2">
+                                    <Swords className="w-4 h-4" />
+                                    Live debat
+                                  </span>
+                                  <span className="text-[11px] font-medium text-black/40 dark:text-white/30 mt-1">Laat de AI-modellen met elkaar discussiëren</span>
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => { setSession(prev => ({ ...prev, stage: WorkflowStage.COMPOSITION })); scrollTo(compositionRef, 150); }}
-                                  className="btn-ghost flex-1 justify-center py-3"
+                                  className="btn-ghost flex-1 justify-center py-3 flex-col"
                                 >
-                                  <PenLine className="w-4 h-4" />
-                                  Compositie
+                                  <span className="flex items-center gap-2">
+                                    <PenLine className="w-4 h-4" />
+                                    Compositie
+                                  </span>
+                                  <span className="text-[11px] font-medium text-black/40 dark:text-white/30 mt-1">Stel zelf het eindadvies samen uit de analyses</span>
                                 </button>
                               </div>
                             </div>
@@ -1110,17 +1153,34 @@ const App: FC = () => {
                             {/* Verdict body */}
                             <div className="px-5 sm:px-8 md:px-16 py-6 sm:py-10 md:py-16 bg-white dark:bg-black">
                               {session.synthesis ? (
-                                <div className="prose prose-lg md:prose-xl max-w-none dark:prose-invert
-                                  prose-headings:font-black prose-headings:tracking-tight prose-headings:uppercase
-                                  prose-h2:text-2xl sm:prose-h2:text-3xl md:prose-h2:text-4xl prose-h2:border-b-2 md:prose-h2:border-b-4 prose-h2:border-black dark:prose-h2:border-[var(--line)] prose-h2:pb-2 md:prose-h2:pb-4 prose-h2:mb-6 md:prose-h2:mb-8 prose-h2:mt-12 md:prose-h2:mt-16 first:prose-h2:mt-0
-                                  prose-h3:text-xl md:prose-h3:text-2xl prose-h3:text-black dark:prose-h3:text-[var(--ink)] prose-h3:mt-8 md:prose-h3:mt-12 prose-h3:mb-3 md:prose-h3:mb-4
-                                  prose-p:leading-relaxed prose-p:text-black dark:prose-p:text-white/80 prose-p:text-lg sm:prose-p:text-xl md:prose-p:text-2xl prose-p:font-bold
-                                  prose-strong:text-black dark:prose-strong:text-[var(--ink)] prose-strong:font-black
-                                  prose-blockquote:border-l-4 md:prose-blockquote:border-l-8 prose-blockquote:border-[var(--line)] prose-blockquote:bg-zinc-50 dark:prose-blockquote:bg-zinc-900 prose-blockquote:px-5 md:prose-blockquote:px-8 prose-blockquote:py-4 md:prose-blockquote:py-6 prose-blockquote:rounded-none prose-blockquote:not-italic
-                                  prose-li:text-black dark:prose-li:text-white/80 prose-li:my-1 md:prose-li:my-2 prose-li:text-lg sm:prose-li:text-xl md:prose-li:text-xl prose-li:font-bold
-                                  prose-hr:border-black/10 dark:prose-hr:border-[var(--line)]/20">
-                                  <ReactMarkdown>{session.synthesis}</ReactMarkdown>
-                                </div>
+                                (() => {
+                                  const { consensus, confidence, cleanText } = parseVerdictScores(session.synthesis);
+                                  return (
+                                    <>
+                                      {(consensus !== null || confidence !== null) && (
+                                        <div className="flex flex-col sm:flex-row gap-6 mb-8 md:mb-12 p-4 md:p-6 border-2 border-black/10 dark:border-white/10 bg-zinc-50 dark:bg-zinc-900">
+                                          {consensus !== null && (
+                                            <ScoreBar label="Consensus" value={consensus} icon={<Users className="w-4 h-4 text-black/40 dark:text-white/40" />} />
+                                          )}
+                                          {confidence !== null && (
+                                            <ScoreBar label="Vertrouwen" value={confidence} icon={<Shield className="w-4 h-4 text-black/40 dark:text-white/40" />} />
+                                          )}
+                                        </div>
+                                      )}
+                                      <div className="prose prose-lg md:prose-xl max-w-none dark:prose-invert
+                                        prose-headings:font-black prose-headings:tracking-tight prose-headings:uppercase
+                                        prose-h2:text-2xl sm:prose-h2:text-3xl md:prose-h2:text-4xl prose-h2:border-b-2 md:prose-h2:border-b-4 prose-h2:border-black dark:prose-h2:border-[var(--line)] prose-h2:pb-2 md:prose-h2:pb-4 prose-h2:mb-6 md:prose-h2:mb-8 prose-h2:mt-12 md:prose-h2:mt-16 first:prose-h2:mt-0
+                                        prose-h3:text-xl md:prose-h3:text-2xl prose-h3:text-black dark:prose-h3:text-[var(--ink)] prose-h3:mt-8 md:prose-h3:mt-12 prose-h3:mb-3 md:prose-h3:mb-4
+                                        prose-p:leading-relaxed prose-p:text-black dark:prose-p:text-white/80 prose-p:text-lg sm:prose-p:text-xl md:prose-p:text-2xl prose-p:font-bold
+                                        prose-strong:text-black dark:prose-strong:text-[var(--ink)] prose-strong:font-black
+                                        prose-blockquote:border-l-4 md:prose-blockquote:border-l-8 prose-blockquote:border-[var(--line)] prose-blockquote:bg-zinc-50 dark:prose-blockquote:bg-zinc-900 prose-blockquote:px-5 md:prose-blockquote:px-8 prose-blockquote:py-4 md:prose-blockquote:py-6 prose-blockquote:rounded-none prose-blockquote:not-italic
+                                        prose-li:text-black dark:prose-li:text-white/80 prose-li:my-1 md:prose-li:my-2 prose-li:text-lg sm:prose-li:text-xl md:prose-li:text-xl prose-li:font-bold
+                                        prose-hr:border-black/10 dark:prose-hr:border-[var(--line)]/20">
+                                        <ReactMarkdown>{cleanText}</ReactMarkdown>
+                                      </div>
+                                    </>
+                                  );
+                                })()
                               ) : (
                                 <div className="h-52 flex flex-col items-center justify-center gap-5">
                                   <div className="relative">

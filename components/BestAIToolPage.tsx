@@ -120,7 +120,7 @@ export const BestAIToolPage: FC = () => {
       />
 
       <nav aria-label="Breadcrumb" className="max-w-4xl mx-auto px-5 sm:px-8 pt-6">
-        <ol className="flex items-center gap-2 text-base font-black uppercase tracking-widest text-black/30 dark:text-white/30">
+        <ol className="flex items-center gap-2 text-base font-black uppercase tracking-widest text-black/50 dark:text-white/50">
           <li><button type="button" onClick={() => navigate('/')} className="hover:text-black dark:hover:text-white transition-colors">Home</button></li>
           <li>/</li>
           <li className="text-black dark:text-white/50">Vergelijk</li>
@@ -185,11 +185,11 @@ export const BestAIToolPage: FC = () => {
 
               <div className="bg-black/5 dark:bg-white/5 rounded-xl px-4 py-3 space-y-1">
                 <div className="flex items-center justify-between">
-                  <span className="text-base font-black uppercase tracking-widest text-black/30 dark:text-white/30">Prijs</span>
+                  <span className="text-base font-black uppercase tracking-widest text-black/50 dark:text-white/50">Prijs</span>
                   <span className="text-base font-bold text-black dark:text-white">{tool.price}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-base font-black uppercase tracking-widest text-black/30 dark:text-white/30">Beste voor</span>
+                  <span className="text-base font-black uppercase tracking-widest text-black/50 dark:text-white/50">Beste voor</span>
                   <span className="text-base text-black dark:text-white/50">{tool.best}</span>
                 </div>
               </div>
