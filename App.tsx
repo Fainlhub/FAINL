@@ -187,9 +187,11 @@ const App: FC = () => {
       ...merged,
       activeCouncil: (() => {
         if (!Array.isArray(merged.activeCouncil) || merged.activeCouncil.length === 0) return DEFAULT_COUNCIL;
-        // Migrate: update modelId for any member whose ID matches a DEFAULT_COUNCIL member
         const defaultById = Object.fromEntries(DEFAULT_COUNCIL.map(m => [m.id, m]));
-        return merged.activeCouncil.map((m: any) => defaultById[m.id] ? { ...m, modelId: defaultById[m.id].modelId, provider: defaultById[m.id].provider } : m);
+        const migrated = merged.activeCouncil.map((m: any) => defaultById[m.id] ? { ...m, ...defaultById[m.id] } : m);
+        const hasAllDefaults = DEFAULT_COUNCIL.every(d => migrated.some((m: any) => m.id === d.id));
+        if (!hasAllDefaults) return DEFAULT_COUNCIL;
+        return migrated;
       })(),
       customNodes: Array.isArray(merged.customNodes) ? merged.customNodes : [],
       modelCount: merged.modelCount === 3 ? 3 : 7,

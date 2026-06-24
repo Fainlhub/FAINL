@@ -27,3 +27,5 @@ supabase.exe
 supabase/.temp/
 
 /generated/prisma
+
+.vercel

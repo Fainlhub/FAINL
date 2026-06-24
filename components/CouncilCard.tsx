@@ -5,13 +5,13 @@ import { NodeLoader } from './NodeLoader';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
 const LOADING_TEXT: Record<string, string> = {
-  'node-alpha-fact': 'Controleert feiten en bronnen...',
-  'node-beta-logic': 'Ontleedt de logica van je vraag...',
-  'node-gamma-vision': 'Zoekt het onverwachte perspectief...',
-  'node-delta-deep': 'Graaft naar diepere patronen...',
-  'node-epsilon-seek': 'Verifieert met actuele bronnen...',
-  'node-zeta-risk': 'Analyseert risico\'s en zwakke plekken...',
-  'node-eta-synth': 'Zoekt synthese tussen standpunten...',
+  'node-alpha-fact': 'Perplexi Pieter controleert feiten en bronnen...',
+  'node-beta-logic': 'Claudia Codea ontleedt de logica...',
+  'node-gamma-vision': 'Shope Aijna zoekt het onverwachte perspectief...',
+  'node-delta-deep': 'Jan Seekdeep graaft naar diepere patronen...',
+  'node-epsilon-seek': 'Mimi Stral verifieert met actuele bronnen...',
+  'node-zeta-risk': 'Leonardo da Llama analyseert risico\'s...',
+  'node-eta-synth': 'Gerdi Gemini zoekt synthese tussen standpunten...',
 };
 
 const SECTION_BADGE: Record<string, string> = {
