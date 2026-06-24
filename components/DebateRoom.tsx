@@ -154,6 +154,7 @@ export const DebateRoom: FC<DebateRoomProps> = ({
   isOpen, session, config, councilService,
   onClose, onEndDebate, onAddDebateMessage,
 }) => {
+  const [showIntro, setShowIntro]             = useState(() => !localStorage.getItem('fainl_debate_intro_seen'));
   const [messages, setMessages]               = useState<DebateMessage[]>([]);
   const [userInput, setUserInput]             = useState('');
   const [isPaused, setIsPaused]               = useState(false);
@@ -455,6 +456,30 @@ export const DebateRoom: FC<DebateRoomProps> = ({
   return (
     <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/85 backdrop-blur-xl">
       <div className="w-full max-w-3xl h-[100dvh] sm:h-[92vh] bg-white dark:bg-black border-0 sm:border-4 border-black dark:border-[var(--line)]/40 sm:rounded-none flex flex-col overflow-hidden shadow-2xl">
+
+        {/* ── Intro overlay for first-time visitors ─────────────── */}
+        {showIntro && (
+          <div className="absolute inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-6 animate-in fade-in duration-300">
+            <div className="max-w-md text-center text-white space-y-6">
+              <div className="w-16 h-16 bg-[var(--action)] rounded-full flex items-center justify-center mx-auto">
+                <Zap className="w-8 h-8 text-black" />
+              </div>
+              <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tight">Welkom in de Debatruimte</h3>
+              <div className="space-y-3 text-sm font-bold text-white/70 leading-relaxed">
+                <p>De AI-raadsleden gaan nu live met elkaar in debat over jouw vraag.</p>
+                <p>Je kunt meekijken, maar ook zelf deelnemen door je eigen argumenten in te typen of in te spreken.</p>
+                <p>Wanneer je genoeg hebt gezien, sluit je het debat af en gaat Victor aan de slag met het eindoordeel.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setShowIntro(false); localStorage.setItem('fainl_debate_intro_seen', '1'); }}
+                className="px-8 py-4 bg-[var(--action)] text-black font-black uppercase tracking-widest text-sm hover:scale-105 active:scale-95 transition-all"
+              >
+                Start het debat
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* ── Header ─────────────────────────────────────────────── */}
         <div className="bg-black border-b-4 border-[var(--line)] text-white px-3 py-3 sm:px-6 sm:py-5 flex items-center gap-2 sm:gap-4 shrink-0">

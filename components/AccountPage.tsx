@@ -16,8 +16,9 @@ import {
   ToggleLeft,
   ToggleRight,
   Download,
+  Search,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { SessionState, AppConfig, ModelProvider, CouncilMember } from '../types';
 import { DEFAULT_COUNCIL, PRESETS } from '../constants';
 import { useNavigate } from 'react-router-dom';
@@ -46,14 +47,20 @@ export const AccountPage: FC<AccountPageProps> = ({
 
   const [isAddingNode, setIsAddingNode] = useState(false);
   const [newNode, setNewNode] = useState({ name: '', role: '', systemPrompt: '' });
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Stats
   const creditsRemaining = config.isLifetime ? '∞' : config.creditsRemaining;
   const freeSessiesResterend = config.isLifetime ? '∞' : Math.max(0, config.totalTurnsAllowed - config.turnsUsed);
   const totalSessies = history.length;
 
-  // Pagination Logic
-  const activeHistory = history.filter(s => !s.isArchived);
+  // Pagination Logic with search filter
+  const activeHistory = useMemo(() => {
+    const base = history.filter(s => !s.isArchived);
+    if (!searchQuery.trim()) return base;
+    const q = searchQuery.toLowerCase();
+    return base.filter(s => s.query.toLowerCase().includes(q));
+  }, [history, searchQuery]);
   const totalPages = Math.ceil(activeHistory.length / itemsPerPage);
   const currentHistory = activeHistory.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
@@ -434,6 +441,18 @@ export const AccountPage: FC<AccountPageProps> = ({
           </div>
 
           <div className="space-y-6">
+            {history.filter(s => !s.isArchived).length > 0 && (
+              <div className="relative mb-2">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-black/30 dark:text-white/30 pointer-events-none" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+                  placeholder="Zoek in je sessies..."
+                  className="w-full pl-12 pr-4 py-3 border-2 border-black/15 dark:border-white/15 bg-white dark:bg-black text-black dark:text-white text-sm font-bold rounded-none outline-none focus:border-black dark:focus:border-white transition-colors placeholder:text-black/30 dark:placeholder:text-white/30"
+                />
+              </div>
+            )}
             {activeHistory.length > 0 && (
               <div className="flex items-center justify-between px-2 pb-4">
                 <button

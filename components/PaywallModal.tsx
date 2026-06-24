@@ -45,11 +45,11 @@ export const PaywallModal: FC<PaywallModalProps> = ({
             </div>
             <div>
               <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tighter leading-none text-black dark:text-white" title="FAINL — Meerdere AI's. Één Eindoordeel.">
-                {language === 'nl' ? 'Gezamenlijk AI Oordeel' : 'Intelligence Access Required'}
+                {language === 'nl' ? 'Ontgrendel de Raad' : 'Unlock the Council'}
               </h2>
               <p className="text-sm md:text-sm font-black text-black/40 dark:text-white/40 uppercase mt-1 tracking-widest flex items-center gap-2">
                 <Star className="w-3 h-3 text-white fill-white" />
-                {language === 'nl' ? 'Premium Neuraal Eindoordeel Link' : 'Premium Neural Verdict Link'}
+                {language === 'nl' ? 'Jouw persoonlijke AI-raad wacht' : 'Your personal AI council awaits'}
               </p>
             </div>
           </div>
@@ -63,14 +63,14 @@ export const PaywallModal: FC<PaywallModalProps> = ({
 
           <div className="space-y-4">
             <h3 className="text-xl md:text-2xl font-black uppercase tracking-tight text-black dark:text-white text-center">
-               {!authSession 
-                  ? (language === 'nl' ? 'Account Vereist' : 'Account Required')
-                  : (language === 'nl' ? 'Kies Je Capaciteit' : 'Select Your Capacity')}
+               {!authSession
+                  ? (language === 'nl' ? 'Ga verder met de Raad' : 'Continue with the Council')
+                  : (language === 'nl' ? 'Kies je pakket' : 'Choose your package')}
             </h3>
             <p className="text-sm font-bold text-black/60 dark:text-white/60 leading-relaxed text-center max-w-md mx-auto">
               {!authSession
-                 ? (language === 'nl' ? 'Log in om je resterende gratis sessies te gebruiken of nieuwe credits aan te schaffen. Zo raak je ze nooit kwijt.' : 'Sign in to use your remaining free sessions or purchase new credits. This ensures you never lose them.')
-                 : (language === 'nl' ? "Krijg direct toegang tot het volledige analyse protocol. Geen abonnement nodig voor losse credits." : "Unlock the full neural analysis protocol instantly. No subscription required for single credit packs.")}
+                 ? (language === 'nl' ? 'Maak een gratis account aan om je sessies te bewaren en meer eindoordelen te ontgrendelen.' : 'Create a free account to save your sessions and unlock more verdicts.')
+                 : (language === 'nl' ? "Elke credit geeft je één volledige raadssessie met eindoordeel. Geen abonnement nodig." : "Each credit gives you one full council session with verdict. No subscription required.")}
             </p>
           </div>
 
@@ -156,7 +156,7 @@ export const PaywallModal: FC<PaywallModalProps> = ({
             onClick={onClose}
             className="w-full sm:w-auto px-10 py-4 bg-black dark:bg-white text-white dark:text-black font-black text-sm uppercase tracking-[0.2em] rounded-xl hover:scale-105 active:scale-95 transition-all shadow-xl"
           >
-            {language === 'nl' ? 'Ik beslis later' : "I'll decide later"}
+            {language === 'nl' ? 'Later beslissen' : "Decide later"}
           </button>
         </div>
       </div>

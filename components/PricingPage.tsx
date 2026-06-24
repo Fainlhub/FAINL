@@ -71,11 +71,19 @@ export const PricingPage: FC<PricingPageProps> = ({
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 items-start">
-          {PRICING.CREDITS.map((pkg, idx) => (
-            <div key={idx} className="card-fainl bg-white dark:bg-black border-4 border-black dark:border-[var(--line)] rounded-none p-5 shadow-md hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all">
+          {PRICING.CREDITS.map((pkg, idx) => {
+            const perSession = (pkg.price / pkg.count).toFixed(2);
+            const isMostChosen = pkg.count === 10;
+            return (
+            <div key={idx} className={`card-fainl bg-white dark:bg-black border-4 rounded-none p-5 shadow-md hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all relative ${isMostChosen ? 'border-[var(--action)] ring-2 ring-[var(--action)]' : 'border-black dark:border-[var(--line)]'}`}>
+              {isMostChosen && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[var(--action)] text-black text-[10px] font-black uppercase tracking-widest px-3 py-1 whitespace-nowrap">
+                  Meest gekozen
+                </div>
+              )}
               <div className="bg-black text-[var(--ink)] text-sm font-black px-3 py-1.5 uppercase tracking-widest inline-block mb-3">{pkg.count} {pkg.count === 1 ? 'CREDIT' : 'CREDITS'}</div>
               <div className="text-4xl xl:text-5xl font-black text-black dark:text-white mb-1">€{pkg.price}</div>
-              <p className="text-sm font-bold text-black dark:text-white/40 mb-4 lowercase tracking-widest">Multi-AI analyse.</p>
+              <p className="text-sm font-bold text-black/60 dark:text-white/40 mb-4 lowercase tracking-widest">€{perSession} per sessie</p>
 
               <ul className="space-y-2 mb-5">
                 <li className="flex items-center gap-2 text-sm font-bold text-black dark:text-white"><CheckIcon /> <span>Standaard</span></li>
@@ -89,7 +97,8 @@ export const PricingPage: FC<PricingPageProps> = ({
                 {language === 'nl' ? `Koop ${pkg.count}` : `Buy ${pkg.count}`}
               </button>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         <p className="mt-6 text-center text-base font-black uppercase tracking-widest text-black dark:text-white/30">

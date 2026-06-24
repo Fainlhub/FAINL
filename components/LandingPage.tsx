@@ -583,6 +583,37 @@ export const LandingPage: FC = () => {
         </div>
       </section>
 
+      {/* ══ SOCIAL PROOF ══ */}
+      <BrandBreakLine />
+      <section className="max-w-5xl mx-auto px-5 sm:px-8 py-16 md:py-24">
+        <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-black dark:text-white text-center mb-4">
+          Wat gebruikers zeggen
+        </h2>
+        <p className="text-center text-sm font-bold text-black/50 dark:text-white/40 uppercase tracking-widest mb-12">
+          Binnenkort: echte gebruikerservaringen
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[
+            { quote: "Eindelijk een tool die niet één mening geeft, maar me laat zien waar de experts het over eens zijn.", name: "M. de Vries", role: "Ondernemer", stars: 5 },
+            { quote: "Het live debat is fascinerend. Je ziet letterlijk hoe AI-modellen elkaars argumenten aanscherpen.", name: "L. Bakker", role: "Consultant", stars: 5 },
+            { quote: "Ik gebruik FAINL voor strategische beslissingen. Het eindoordeel is altijd genuanceerder dan wat één AI levert.", name: "J. Smit", role: "Startup Founder", stars: 5 },
+          ].map(({ quote, name, role, stars }) => (
+            <div key={name} className="bg-white dark:bg-black border-2 border-black/10 dark:border-white/10 p-6 md:p-8 flex flex-col gap-4">
+              <div className="flex gap-0.5">
+                {Array.from({ length: stars }).map((_, i) => (
+                  <span key={i} className="text-[var(--action)] text-sm">★</span>
+                ))}
+              </div>
+              <p className="text-base font-bold text-black dark:text-white/80 leading-relaxed italic">"{quote}"</p>
+              <div className="mt-auto pt-2 border-t border-black/5 dark:border-white/5">
+                <p className="text-sm font-black text-black dark:text-white">{name}</p>
+                <p className="text-xs font-bold text-black/50 dark:text-white/40">{role}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* ══ VERGELIJKING ══ */}
       <BrandBreakLine />
       <section

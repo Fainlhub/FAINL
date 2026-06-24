@@ -15,6 +15,8 @@ import {
   Eye,
   Swords,
   PenLine,
+  ThumbsUp,
+  ThumbsDown,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import {
@@ -117,6 +119,78 @@ const ScoreBar: FC<{ label: string; value: number; icon: React.ReactNode }> = ({
     </div>
   </div>
 );
+
+// ─── Feedback Widget ─────────────────────────────────────────────────────────
+const FeedbackWidget: FC<{ sessionId: string }> = ({ sessionId }) => {
+  const [state, setState] = useState<'idle' | 'negative' | 'submitted'>('idle');
+  const [comment, setComment] = useState('');
+
+  const submit = async (positive: boolean, text?: string) => {
+    setState('submitted');
+    try {
+      await supabase.from('session_feedback').insert({
+        session_id: sessionId,
+        positive,
+        comment: text || null,
+      });
+    } catch {}
+  };
+
+  if (state === 'submitted') {
+    return (
+      <p className="text-xs font-bold text-black/50 dark:text-white/40 text-center py-2 animate-in fade-in duration-300">
+        Bedankt voor je feedback!
+      </p>
+    );
+  }
+
+  if (state === 'negative') {
+    return (
+      <div className="flex flex-col items-center gap-2 py-2 animate-in fade-in duration-300">
+        <p className="text-xs font-bold text-black/60 dark:text-white/50">Wat kan er beter?</p>
+        <div className="flex gap-2 w-full max-w-sm">
+          <input
+            type="text"
+            maxLength={200}
+            value={comment}
+            onChange={e => setComment(e.target.value)}
+            placeholder="Optioneel..."
+            className="flex-1 px-3 py-2 text-xs border-2 border-black/15 dark:border-white/15 bg-white dark:bg-black text-black dark:text-white rounded-none outline-none focus:border-black dark:focus:border-white transition-colors"
+          />
+          <button
+            type="button"
+            onClick={() => submit(false, comment)}
+            className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black text-xs font-black uppercase tracking-widest hover:bg-[var(--action)] hover:text-black transition-colors"
+          >
+            Verstuur
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-center gap-4 py-2">
+      <span className="text-xs font-bold text-black/50 dark:text-white/40">Was dit oordeel nuttig?</span>
+      <button
+        type="button"
+        onClick={() => submit(true)}
+        className="p-2 hover:bg-green-50 dark:hover:bg-green-900/20 text-black/40 dark:text-white/30 hover:text-green-600 dark:hover:text-green-400 transition-colors rounded-full"
+        aria-label="Nuttig"
+      >
+        <ThumbsUp className="w-4 h-4" />
+      </button>
+      <button
+        type="button"
+        onClick={() => setState('negative')}
+        className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 text-black/40 dark:text-white/30 hover:text-red-500 dark:hover:text-red-400 transition-colors rounded-full"
+        aria-label="Niet nuttig"
+      >
+        <ThumbsDown className="w-4 h-4" />
+      </button>
+    </div>
+  );
+};
 
 // ─── Journey Progress Stepper ────────────────────────────────────────────────
 const JOURNEY_STEPS: { label: string; stages: WorkflowStage[] }[] = [
@@ -251,22 +325,29 @@ const PaymentSuccessPage: FC = () => {
 
   return (
     <div className="max-w-xl mx-auto px-4 py-16 md:py-24 text-center animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="p-6 md:p-8 bg-white border-2 md:border-4 border-black shadow-sm md:shadow-md">
-        <div className="w-12 h-12 md:w-16 md:h-16 bg-black border-2 md:border-4 border-black flex items-center justify-center mx-auto mb-6">
-          <CircleCheck className="w-8 h-8 text-white" />
+      <style>{`
+        @keyframes success-glow {
+          0%, 100% { box-shadow: 0 0 0px var(--action); }
+          50% { box-shadow: 0 0 30px var(--action), 0 0 60px var(--action); }
+        }
+        .success-shimmer { animation: success-glow 1.5s ease-in-out 1; }
+      `}</style>
+      <div className="p-6 md:p-8 bg-white dark:bg-black border-2 md:border-4 border-black dark:border-[var(--line)] shadow-sm md:shadow-md success-shimmer">
+        <div className="w-14 h-14 md:w-20 md:h-20 bg-[var(--action)] border-2 md:border-4 border-black flex items-center justify-center mx-auto mb-6 animate-in zoom-in-50 duration-500">
+          <CircleCheck className="w-8 h-8 md:w-10 md:h-10 text-black" />
         </div>
-        <h1 className="text-3xl font-black uppercase tracking-tighter mb-3 text-black">
-          {isConfirmed ? 'Betaling Bevestigd' : 'Bedankt!'}
+        <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tighter mb-3 text-black dark:text-white">
+          {isConfirmed ? 'Betaling Bevestigd!' : 'Bedankt!'}
         </h1>
-        <p className="font-bold text-black mb-2">
+        <p className="font-bold text-black dark:text-white/80 mb-2 text-lg">
           {isConfirmed && type === 'credits'
             ? `${count} credits zijn toegevoegd aan jouw account.`
             : isConfirmed && type === 'lifetime'
             ? 'Onbeperkte toegang geactiveerd.'
             : 'Je betaling is verwerkt. Ga terug naar het dashboard om je credits te bekijken.'}
         </p>
-        <p className="text-base font-black uppercase tracking-widest text-black mb-8">
-          Credits worden opgeslagen in jouw browser.
+        <p className="text-sm font-bold text-black/50 dark:text-white/40 uppercase tracking-widest mb-8">
+          Je kunt direct je volgende vraag stellen aan de Raad.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
@@ -1221,6 +1302,8 @@ const App: FC = () => {
                                 Kopieer eindoordeel
                               </button>
                             </div>
+
+                            <FeedbackWidget sessionId={session.id} />
 
                             <p className="text-xs text-zinc-400 dark:text-zinc-600 uppercase tracking-widest font-bold">
                               Sessie opgeslagen in Mijn FAINL's
