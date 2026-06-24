@@ -4,6 +4,12 @@ import { CouncilMember, CouncilResponse } from '../types';
 import { NodeLoader } from './NodeLoader';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
+const LOADING_TEXT: Record<string, string> = {
+  'node-alpha-fact': 'Controleert feiten en bronnen…',
+  'node-beta-logic': 'Ontleedt de logica van je vraag…',
+  'node-gamma-vision': 'Zoekt het onverwachte perspectief…',
+};
+
 const SECTION_BADGE: Record<string, string> = {
   STANDPUNT: 'bg-[var(--ink-3)] text-white',
   ANALYSE:   'bg-green-500 text-white',
@@ -31,7 +37,7 @@ export const CouncilCard: FC<CouncilCardProps> = ({
   const showFull = isExpanded || localExpanded;
 
   return (
-    <div className="relative flex flex-col bg-white dark:bg-zinc-900 border-2 border-black dark:border-[var(--line)]/40 rounded-none overflow-hidden transition-all duration-200 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(71,109,215,0.35)]">
+    <div className={`relative flex flex-col bg-white dark:bg-zinc-900 border-2 border-black dark:border-[var(--line)]/40 rounded-none overflow-hidden transition-all duration-200 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(71,109,215,0.35)] ${response && !isLoading ? 'animate-in fade-in slide-in-from-bottom-2 duration-400' : ''}`}>
 
       {/* Header */}
       <div className="flex items-center gap-2 md:gap-3 px-3 py-2 md:px-4 md:py-3 border-b-2 border-black dark:border-[var(--line)]/30 bg-black">
@@ -64,7 +70,7 @@ export const CouncilCard: FC<CouncilCardProps> = ({
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-8 md:py-14 gap-4">
             <NodeLoader shape="circle" />
-            <span className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-black/40 dark:text-white/30 animate-pulse">Analyseert jouw vraag…</span>
+            <span className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-black/40 dark:text-white/30 animate-pulse">{LOADING_TEXT[member.id] || 'Analyseert jouw vraag…'}</span>
           </div>
         ) : response ? (
           <div className="px-3 md:px-5 py-3 md:py-4">

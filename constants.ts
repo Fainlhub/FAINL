@@ -182,14 +182,14 @@ STIJLREGELS:
 
 export const PRESETS = [
   {
-    name: "Standard Protocol (3 Nodes)",
-    description: "Default secure consensus using three distinct, high-performance logic nodes.",
+    name: "Standaard Raad (3 experts)",
+    description: "Gemini, Claude en GPT analyseren onafhankelijk — ideaal voor dagelijks gebruik.",
     members: DEFAULT_COUNCIL,
     chairman: DEFAULT_CHAIRMAN
   },
   {
-    name: "Enhanced Divergence (5 Nodes)",
-    description: "Adds external model providers to the council for broader logical diversity. Requires Groq and Anthropic keys.",
+    name: "Uitgebreide Raad (5 experts)",
+    description: "Vijf diverse modellen voor diepere analyses en meer perspectieven.",
     members: [
       ...DEFAULT_COUNCIL,
       {

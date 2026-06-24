@@ -7,7 +7,7 @@ import { useAuth } from '../../contexts/AuthContext';
 
 interface AppShellProps {
   children: ReactNode;
-  history: { id: string; query: string }[];
+  history: { id: string; query: string; timestamp?: number }[];
   onLoadSession: (s: any) => void;
   onNewChat: () => void;
 }
@@ -53,6 +53,12 @@ export const AppShell: FC<AppShellProps> = ({
 
   return (
     <div className="app-shell">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[200] focus:px-4 focus:py-2 focus:bg-black focus:text-white focus:font-black focus:text-sm focus:uppercase focus:tracking-widest"
+      >
+        Direct naar inhoud
+      </a>
       <Sidebar
         collapsed={sidebarCollapsed}
         onToggle={toggleSidebar}
@@ -69,7 +75,9 @@ export const AppShell: FC<AppShellProps> = ({
 
       <div className={`main-canvas${sidebarCollapsed ? ' sidebar-collapsed' : ''}`}>
         <TopBar />
-        {children}
+        <div id="main-content" role="main" aria-live="polite">
+          {children}
+        </div>
       </div>
 
       <BottomNav />

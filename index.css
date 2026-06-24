@@ -311,13 +311,52 @@ html.dark {
 .btn-new-chat:hover { background: #2a2a2a; border-color: #3a3a3a; }
 .btn-new-chat svg { width: 15px; height: 15px; flex-shrink: 0; }
 
+.sidebar-search {
+  position: relative;
+  margin: 6px 8px 2px;
+}
+.sidebar-search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 13px;
+  height: 13px;
+  color: var(--sidebar-muted);
+  opacity: 0.5;
+  pointer-events: none;
+}
+.sidebar-search-input {
+  width: 100%;
+  padding: 7px 10px 7px 30px;
+  background: var(--sidebar-2);
+  border: 1px solid var(--sidebar-line);
+  border-radius: var(--r-sm);
+  color: #ccc;
+  font-size: 12.5px;
+  font-family: var(--f-ui);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.sidebar-search-input::placeholder { color: var(--sidebar-muted); opacity: 0.5; }
+.sidebar-search-input:focus { border-color: #555; }
+.sidebar.collapsed .sidebar-search { display: none; }
+
+.sidebar-empty {
+  padding: 16px 10px;
+  font-size: 11px;
+  color: var(--sidebar-muted);
+  opacity: 0.5;
+  font-family: var(--f-ui);
+  text-align: center;
+}
+
 .sidebar-section { padding: 4px 8px 0; }
 .sidebar-section-label {
   font-size: 10px; font-weight: 600; font-family: var(--f-ui);
   text-transform: uppercase; letter-spacing: 0.08em;
   color: var(--sidebar-muted); opacity: 0.6; padding: 6px 10px 3px;
 }
-.sidebar-section-scrollable { flex: 1; margin-top: 8px; overflow-y: auto; }
 
 .sidebar-history-item {
   display: flex;
@@ -1228,4 +1267,24 @@ html.dark {
 .paywall-token-count { font-family: var(--f-display); font-size: 2.4rem; font-weight: 900; color: var(--ink); letter-spacing: -0.03em; line-height: 1; }
 .paywall-token-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-3); }
 .paywall-divider { width: 100%; height: 1px; background: var(--line); margin: 2px 0; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Reduced Motion — respect user preference
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .ai-ticker-track { animation: none !important; }
+  .animate-pulse { animation: none !important; }
+  .animate-spin { animation: none !important; }
+  .animate-orbit { animation: none !important; }
+  .animate-reverse-orbit { animation: none !important; }
+  .animate-pulse-glow { animation: none !important; }
+}
 .paywall-price { font-size: 15px; font-weight: 700; color: var(--ink); }

@@ -106,6 +106,11 @@ export const PricingPage: FC<PricingPageProps> = ({
             ? 'Alle pakketten worden direct verwerkt via Stripe.'
             : 'All packages processed instantly via Stripe.'}
         </p>
+        <p className="mt-3 text-center text-sm font-bold text-black/40 dark:text-white/30 max-w-lg mx-auto">
+          {language === 'nl'
+            ? 'Credits verlopen nooit · Geen automatische verlenging bij losse pakketten · Vragen? contact@fainl.com'
+            : 'Credits never expire · No auto-renewal on one-time packs · Questions? contact@fainl.com'}
+        </p>
       </div>
 
 

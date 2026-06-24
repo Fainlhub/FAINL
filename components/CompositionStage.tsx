@@ -374,6 +374,13 @@ export const CompositionStage: FC<CompositionStageProps> = ({ responses, members
     setTimeout(() => setCopied(false), 2200);
   };
 
+  const [isMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
+
+  const toggleItem = (item: CanvasItem) => {
+    if (inCanvas(item.id)) removeItem(item.id);
+    else addItem(item);
+  };
+
   const tabItems = sourceItems.filter(i => i.category === activeTab);
   const canvasIds = canvasItems.map(i => i.id);
 
@@ -406,11 +413,60 @@ export const CompositionStage: FC<CompositionStageProps> = ({ responses, members
             Smeed jouw <span className="text-[var(--ink)]">eindoordeel</span>
           </h2>
           <p className="text-sm text-black/45 dark:text-white/45 font-bold max-w-xl mx-auto">
-            Alle inzichten staan al klaar op het canvas. Verwijder wat je niet nodig hebt, herschik naar prioriteit — of vraag Victor meteen om zijn eindoordeel.
+            {isMobile
+              ? 'Selecteer de onderdelen die je het belangrijkst vindt. Victor weegt je selectie mee in het eindoordeel.'
+              : 'Alle inzichten staan al klaar op het canvas. Verwijder wat je niet nodig hebt, herschik naar prioriteit — of vraag Victor meteen om zijn eindoordeel.'}
           </p>
         </div>
 
-        {/* ── Main grid: Source | Canvas ─────────────────────────── */}
+        {/* ── Mobile: Checkbox interface ────────────────────────── */}
+        {isMobile ? (
+          <div className="space-y-4">
+            {CATEGORIES.map(cat => {
+              const items = sourceItems.filter(i => i.category === cat);
+              if (items.length === 0) return null;
+              return (
+                <div key={cat} className="border-2 border-black/10 dark:border-white/10 overflow-hidden">
+                  <div className={`px-3 py-2 ${CAT_BG[cat] || 'bg-black/5'}`}>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-black dark:text-white">{cat}</span>
+                  </div>
+                  <div className="divide-y divide-black/5 dark:divide-white/5">
+                    {items.map(item => {
+                      const member = getMember(item.memberId);
+                      const checked = inCanvas(item.id);
+                      return (
+                        <label key={item.id} className="flex items-start gap-3 p-3 cursor-pointer hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors">
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => toggleItem(item)}
+                            className="mt-1 w-4 h-4 accent-[var(--action)] shrink-0"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-black/40 dark:text-white/40">{member?.name}</span>
+                            <p className="text-xs font-bold text-black/70 dark:text-white/60 leading-relaxed line-clamp-3">{item.content}</p>
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => onCompose(composed)}
+                disabled={canvasItems.length === 0}
+                className="flex-1 btn-send justify-center py-4 disabled:opacity-30"
+              >
+                <Gavel className="w-5 h-5" /> Victor's eindoordeel ophalen
+              </button>
+            </div>
+          </div>
+        ) : (
+        <>
+        {/* ── Desktop: DnD grid ───────────────────────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-8 items-start">
 
           {/* ── Source Panel ──────────────────────────────────────── */}
@@ -614,6 +670,8 @@ export const CompositionStage: FC<CompositionStageProps> = ({ responses, members
             </div>
           </div>
         </div>
+        </>
+        )}
 
       </div>
 

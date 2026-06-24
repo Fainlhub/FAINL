@@ -155,6 +155,8 @@ export const DebateRoom: FC<DebateRoomProps> = ({
   onClose, onEndDebate, onAddDebateMessage,
 }) => {
   const [showIntro, setShowIntro]             = useState(() => !localStorage.getItem('fainl_debate_intro_seen'));
+  const [showSummary, setShowSummary]         = useState(false);
+  const [summaryData, setSummaryData]         = useState<{ count: number; participants: string[]; duration: number } | null>(null);
   const [messages, setMessages]               = useState<DebateMessage[]>([]);
   const [userInput, setUserInput]             = useState('');
   const [isPaused, setIsPaused]               = useState(false);
@@ -336,8 +338,20 @@ export const DebateRoom: FC<DebateRoomProps> = ({
     recognitionRef.current?.stop();
     preGenAbortRef.current?.abort();
     preGenAbortRef.current = null;
-    onEndDebate([...messagesRef.current]);
-  }, [onEndDebate]);
+
+    const msgs = [...messagesRef.current];
+    const participants = [...new Set(msgs.map(m => {
+      const member = readyMembers.find(rm => rm.id === m.memberId);
+      return member?.name || 'Jij';
+    }))];
+    const elapsed = duration - timeLeft;
+    setSummaryData({ count: msgs.length, participants, duration: elapsed });
+    setShowSummary(true);
+    setTimeout(() => {
+      setShowSummary(false);
+      onEndDebate(msgs);
+    }, 2500);
+  }, [onEndDebate, readyMembers, duration, timeLeft]);
 
   useEffect(() => { handleEndRef.current = handleEnd; }, [handleEnd]);
 
@@ -477,6 +491,22 @@ export const DebateRoom: FC<DebateRoomProps> = ({
               >
                 Start het debat
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── Summary overlay ─────────────────────────────────── */}
+        {showSummary && summaryData && (
+          <div className="absolute inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-6 animate-in fade-in duration-300">
+            <div className="max-w-sm text-center text-white space-y-4">
+              <Users className="w-10 h-10 text-[var(--action)] mx-auto" />
+              <h3 className="text-xl font-black uppercase tracking-tight">Debat Afgerond</h3>
+              <div className="text-sm font-bold text-white/70 space-y-1">
+                <p>{summaryData.count} berichten uitgewisseld</p>
+                <p>{summaryData.participants.length} deelnemers: {summaryData.participants.join(', ')}</p>
+                <p>Duur: {Math.floor(summaryData.duration / 60)}:{(summaryData.duration % 60).toString().padStart(2, '0')}</p>
+              </div>
+              <p className="text-xs text-white/40 font-bold uppercase tracking-widest">Victor bereidt het eindoordeel voor…</p>
             </div>
           </div>
         )}

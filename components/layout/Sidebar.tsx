@@ -1,16 +1,20 @@
-import { FC, useState } from 'react';
+import { FC, useState, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Shield,
   Plus,
-  Clock,
-  Swords,
+  Search,
   MessageSquare,
   Moon,
   Sun,
   LogOut,
   MoreHorizontal,
   ChevronLeft,
+  BookOpen,
+  HelpCircle,
+  CreditCard,
+  Mail,
+  LayoutDashboard,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -18,7 +22,7 @@ interface SidebarProps {
   onToggle: () => void;
   darkMode: boolean;
   onToggleTheme: () => void;
-  history: { id: string; query: string }[];
+  history: { id: string; query: string; timestamp?: number }[];
   onLoadSession: (s: any) => void;
   onNewChat: () => void;
   userEmail?: string;
@@ -26,6 +30,34 @@ interface SidebarProps {
   isLoggedIn: boolean;
   onLogout: () => void;
 }
+
+const groupByDate = (items: { id: string; query: string; timestamp?: number }[]) => {
+  const now = Date.now();
+  const day = 86400000;
+  const groups: { label: string; items: typeof items }[] = [];
+  const today: typeof items = [];
+  const yesterday: typeof items = [];
+  const week: typeof items = [];
+  const month: typeof items = [];
+  const older: typeof items = [];
+
+  for (const item of items) {
+    const age = now - (item.timestamp || 0);
+    if (!item.timestamp) older.push(item);
+    else if (age < day) today.push(item);
+    else if (age < 2 * day) yesterday.push(item);
+    else if (age < 7 * day) week.push(item);
+    else if (age < 30 * day) month.push(item);
+    else older.push(item);
+  }
+
+  if (today.length) groups.push({ label: 'Vandaag', items: today });
+  if (yesterday.length) groups.push({ label: 'Gisteren', items: yesterday });
+  if (week.length) groups.push({ label: 'Deze week', items: week });
+  if (month.length) groups.push({ label: 'Deze maand', items: month });
+  if (older.length) groups.push({ label: 'Ouder', items: older });
+  return groups;
+};
 
 export const Sidebar: FC<SidebarProps> = ({
   collapsed,
@@ -43,11 +75,15 @@ export const Sidebar: FC<SidebarProps> = ({
   const navigate = useNavigate();
   const location = useLocation();
   const [flyoutOpen, setFlyoutOpen] = useState(false);
+  const [search, setSearch] = useState('');
 
-  const navLinks = [
-    { path: '/mission', label: 'Antwoorden', icon: Clock },
-    { path: '/debates', label: 'Beraadslagen', icon: Swords },
-  ];
+  const filtered = useMemo(() => {
+    if (!search.trim()) return history;
+    const q = search.toLowerCase();
+    return history.filter(s => s.query.toLowerCase().includes(q));
+  }, [history, search]);
+
+  const groups = useMemo(() => groupByDate(filtered), [filtered]);
 
   return (
     <aside className={`sidebar${collapsed ? ' collapsed' : ''}`}>
@@ -74,39 +110,43 @@ export const Sidebar: FC<SidebarProps> = ({
         <span>Nieuwe chat</span>
       </button>
 
-      {/* Nav links */}
-      <nav className="sidebar-nav" style={{ marginTop: 4 }}>
-        {navLinks.map(link => (
-          <div className="sidebar-tooltip-wrap" key={link.path}>
-            <button
-              className={`sidebar-link${location.pathname === link.path ? ' active' : ''}`}
-              onClick={() => navigate(link.path)}
-              title={link.label}
-            >
-              <link.icon />
-              <span>{link.label}</span>
-            </button>
+      {/* Search */}
+      <div className="sidebar-search">
+        <Search className="sidebar-search-icon" />
+        <input
+          type="text"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Zoeken…"
+          className="sidebar-search-input"
+        />
+      </div>
+
+      {/* Chat history — grouped by date */}
+      <nav className="sidebar-nav">
+        {groups.length === 0 && history.length > 0 && search && (
+          <p className="sidebar-empty">Geen resultaten</p>
+        )}
+        {groups.length === 0 && history.length === 0 && (
+          <p className="sidebar-empty">Nog geen chats</p>
+        )}
+        {groups.map(group => (
+          <div key={group.label} className="sidebar-section">
+            <p className="sidebar-section-label">{group.label}</p>
+            {group.items.map(s => (
+              <button
+                key={s.id}
+                className="sidebar-history-item"
+                onClick={() => onLoadSession(s)}
+                title={s.query}
+              >
+                <MessageSquare />
+                <span className="sidebar-history-label">{s.query || 'Naamloos'}</span>
+              </button>
+            ))}
           </div>
         ))}
       </nav>
-
-      {/* Chat history */}
-      {history.length > 0 && (
-        <div className="sidebar-section sidebar-section-scrollable">
-          <p className="sidebar-section-label">Recente chats</p>
-          {history.slice(0, 12).map(s => (
-            <button
-              key={s.id}
-              className="sidebar-history-item"
-              onClick={() => onLoadSession(s)}
-              title={s.query}
-            >
-              <MessageSquare />
-              <span className="sidebar-history-label">{s.query || 'Naamloos'}</span>
-            </button>
-          ))}
-        </div>
-      )}
 
       {/* Footer */}
       <div className="sidebar-footer">
@@ -138,27 +178,26 @@ export const Sidebar: FC<SidebarProps> = ({
               <div className="flyout-backdrop" onClick={() => setFlyoutOpen(false)} />
               <div className="flyout-menu">
                 <button className="flyout-item" onClick={() => { setFlyoutOpen(false); navigate('/tokens'); }}>
-                  Prijzen
+                  <CreditCard style={{ width: 14, height: 14 }} /> Prijzen
                 </button>
                 <button className="flyout-item" onClick={() => { setFlyoutOpen(false); navigate('/dashboard'); }}>
-                  Mijn FAINL's
+                  <LayoutDashboard style={{ width: 14, height: 14 }} /> Mijn FAINL's
                 </button>
                 <button className="flyout-item" onClick={() => { setFlyoutOpen(false); navigate('/cookbook'); }}>
-                  Voorbeeldvragen
+                  <BookOpen style={{ width: 14, height: 14 }} /> Voorbeeldvragen
                 </button>
                 <div className="flyout-divider" />
                 <button className="flyout-item" onClick={() => { setFlyoutOpen(false); navigate('/faq'); }}>
-                  FAQ
+                  <HelpCircle style={{ width: 14, height: 14 }} /> FAQ
                 </button>
                 <button className="flyout-item" onClick={() => { setFlyoutOpen(false); navigate('/contact'); }}>
-                  Contact
+                  <Mail style={{ width: 14, height: 14 }} /> Contact
                 </button>
                 {isLoggedIn && (
                   <>
                     <div className="flyout-divider" />
                     <button className="flyout-item" onClick={() => { setFlyoutOpen(false); onLogout(); }}>
-                      <LogOut />
-                      Uitloggen
+                      <LogOut style={{ width: 14, height: 14 }} /> Uitloggen
                     </button>
                   </>
                 )}

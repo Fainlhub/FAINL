@@ -1,4 +1,4 @@
-  import { FC, useState, useEffect } from "react";
+  import { FC, useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
   ArrowRight,
@@ -128,9 +128,18 @@ const AI_MODELS = [
 
 // ── Static Comparison Banner ────────────────────────────────────────────────
 const HeroComparisonBanner: FC = () => {
+  const bannerRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  useEffect(() => {
+    const el = bannerRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) { setIsVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
   return (
-    <div className="relative w-full max-w-6xl mx-auto px-4 md:px-8 mb-12 md:mb-20">
-      <div className="relative grid grid-cols-1 md:grid-cols-2 border-2 border-black overflow-hidden shadow-[12px_12px_0_0_rgba(0,0,0,0.1)]">
+    <div ref={bannerRef} className="relative w-full max-w-6xl mx-auto px-4 md:px-8 mb-12 md:mb-20">
+      <div className={`relative grid grid-cols-1 md:grid-cols-2 border-2 border-black overflow-hidden shadow-[12px_12px_0_0_rgba(0,0,0,0.1)] transition-all duration-700 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
         
         {/* Central arrow badge — desktop only */}
         <div className="hidden md:flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-white border-[3px] border-[#3B82F6] rounded-full items-center justify-center z-20">

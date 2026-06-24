@@ -1,18 +1,14 @@
 
 import { useState, useRef, useEffect, FC, lazy, Suspense } from 'react';
 import {
-  Send,
   Users,
   MessageSquare,
   Gavel,
-  Sparkles,
   ArrowRight,
   Loader2,
   Shield,
   AlertTriangle,
-  Globe,
   CircleCheck,
-  Eye,
   Swords,
   PenLine,
   ThumbsUp,
@@ -192,6 +188,20 @@ const FeedbackWidget: FC<{ sessionId: string }> = ({ sessionId }) => {
   );
 };
 
+// ─── Wait Time Indicator ─────────────────────────────────────────────────────
+const WaitTimeIndicator: FC<{ startedAt: number }> = ({ startedAt }) => {
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setElapsed(Math.floor((Date.now() - startedAt) / 1000)), 1000);
+    return () => clearInterval(id);
+  }, [startedAt]);
+
+  if (elapsed < 5) return <span className="text-[10px] font-bold text-black/30 dark:text-white/20">Gemiddeld 8–15 seconden</span>;
+  if (elapsed < 30) return <span className="text-[10px] font-bold text-black/30 dark:text-white/20">Gemiddeld 8–15 seconden · {elapsed}s</span>;
+  if (elapsed < 60) return <span className="text-[10px] font-bold text-amber-600/70 dark:text-amber-400/60">Even geduld — complexe vragen kosten meer tijd · {elapsed}s</span>;
+  return <span className="text-[10px] font-bold text-red-500/70">Dit duurt langer dan verwacht · {elapsed}s</span>;
+};
+
 // ─── Journey Progress Stepper ────────────────────────────────────────────────
 const JOURNEY_STEPS: { label: string; stages: WorkflowStage[] }[] = [
   { label: 'Analyse',    stages: [WorkflowStage.PROCESSING_COUNCIL] },
@@ -228,57 +238,6 @@ const JourneyStepper: FC<{ stage: WorkflowStage }> = ({ stage }) => {
           </div>
         );
       })}
-    </div>
-  );
-};
-
-const FadingPlaceholder: FC<{ isFocused: boolean; examples: string[] }> = ({ isFocused, examples }) => {
-  const [index, setIndex] = useState(0);
-  const [fade, setFade] = useState(true);
-
-  useEffect(() => {
-    if (isFocused) return;
-
-    const interval = setInterval(() => {
-      setFade(false);
-      setTimeout(() => {
-        setIndex((prev) => (prev + 1) % examples.length);
-        setFade(true);
-      }, 500);
-    }, 4000);
-
-    return () => clearInterval(interval);
-  }, [isFocused, examples.length]);
-
-  if (isFocused) return null;
-
-  return (
-    <span className={`transition-opacity duration-500 ${fade ? 'opacity-100' : 'opacity-0'}`}>
-      {examples[index]}
-    </span>
-  );
-};
-
-const AnimatedSendIcon: FC = () => {
-  const [glitch, setGlitch] = useState(false);
-
-  useEffect(() => {
-    const triggerGlitch = () => {
-      setGlitch(true);
-      setTimeout(() => setGlitch(false), 150);
-      const nextDelay = Math.random() * 4000 + 2000;
-      setTimeout(triggerGlitch, nextDelay);
-    };
-    const timer = setTimeout(triggerGlitch, 2000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  return (
-    <div className="relative">
-      <Send className={`w-6 h-6 md:w-10 md:h-10 transition-transform duration-100 ${glitch ? 'translate-x-0.5 -translate-y-0.5 opacity-80' : ''}`} />
-      {glitch && (
-        <Send className="w-6 h-6 md:w-10 md:h-10 absolute top-0 left-0 text-red-500 opacity-50 -translate-x-0.5 translate-y-0.5 mix-blend-screen" />
-      )}
     </div>
   );
 };
@@ -522,6 +481,7 @@ const App: FC = () => {
   const [isDebateOpen, setIsDebateOpen] = useState(false);
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const verdictRef = useRef<HTMLDivElement>(null);
+  const processingStartRef = useRef<number>(Date.now());
   const councilRef = useRef<HTMLDivElement>(null);
   const debateChoiceRef = useRef<HTMLDivElement>(null);
   const compositionRef = useRef<HTMLDivElement>(null);
@@ -671,6 +631,7 @@ const App: FC = () => {
       });
     }
 
+    processingStartRef.current = Date.now();
     setSession({
       id: crypto.randomUUID(),
       stage: WorkflowStage.PROCESSING_COUNCIL,
@@ -770,7 +731,7 @@ const App: FC = () => {
     const membersForSynth = readyForSynth.length > 0 ? readyForSynth : config.activeCouncil;
     setSession((prev: SessionState) => ({ ...prev, stage: WorkflowStage.SYNTHESIZING, synthesis: '' }));
     // Scroll verdict into view after a short tick so the DOM has updated
-    setTimeout(() => verdictRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+    setTimeout(() => { verdictRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); verdictRef.current?.focus(); }, 80);
     try {
       const synthesis = await councilService.current.synthesizeStream(
         query,
@@ -893,7 +854,7 @@ const App: FC = () => {
           synthesis: '',
         });
         setInput('');
-        navigate('/mission');
+        navigate('/');
       }}
     >
 
@@ -965,22 +926,20 @@ const App: FC = () => {
       <main className="flex-1 w-full flex flex-col">
         <Suspense fallback={<div className="flex items-center justify-center min-h-[40vh]"><div className="w-6 h-6 border-2 border-black/20 border-t-black dark:border-white/20 dark:border-t-white rounded-full animate-spin" /></div>}>
         <Routes>
-          {/* Home — Chat interface */}
+          {/* Home — Chat interface (navigates to /mission on submit) */}
           <Route path="/" element={
-            session.stage === WorkflowStage.IDLE ? (
-              <ChatHome
-                input={input}
-                onInputChange={setInput}
-                onSubmit={() => handleStart()}
-                isInputFocused={isInputFocused}
-                onFocus={() => setIsInputFocused(true)}
-                onBlur={() => setIsInputFocused(false)}
-                turnsUsed={profile ? profile.total_turns_used : config.turnsUsed}
-                totalTurnsAllowed={config.totalTurnsAllowed}
-                creditsRemaining={profile ? profile.credits_remaining : config.creditsRemaining}
-                isLifetime={profile ? profile.is_lifetime : config.isLifetime}
-              />
-            ) : null
+            <ChatHome
+              input={input}
+              onInputChange={setInput}
+              onSubmit={() => { navigate('/mission'); handleStart(); }}
+              isInputFocused={isInputFocused}
+              onFocus={() => setIsInputFocused(true)}
+              onBlur={() => setIsInputFocused(false)}
+              turnsUsed={profile ? profile.total_turns_used : config.turnsUsed}
+              totalTurnsAllowed={config.totalTurnsAllowed}
+              creditsRemaining={profile ? profile.credits_remaining : config.creditsRemaining}
+              isLifetime={profile ? profile.is_lifetime : config.isLifetime}
+            />
           } />
 
           {/* Landing / Welcome page */}
@@ -1025,72 +984,18 @@ const App: FC = () => {
                   )}
 
                   {session.stage === WorkflowStage.IDLE ? (
-                    <div className="w-full">
-
-                      {/* Session recovery banner */}
-                      {recoverySession && (
-                        <div className="mb-8 bg-[var(--action)] border-4 border-black p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 shadow-[6px_6px_0_0_black] animate-in slide-in-from-top-3 duration-300">
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-black uppercase tracking-widest text-black mb-1">Vorige sessie hervat</p>
-                            <p className="text-sm font-bold text-black/80 truncate">"{recoverySession.query}"</p>
-                          </div>
-                          <div className="flex gap-2 shrink-0">
-                            <button type="button" onClick={() => { setSession(recoverySession); setRecoverySession(null); localStorage.removeItem(SESSION_RECOVERY_KEY); }} className="px-4 py-2 bg-black text-white font-black text-xs uppercase tracking-widest hover:bg-white hover:text-black transition-colors">Hervat</button>
-                            <button type="button" onClick={() => { setRecoverySession(null); localStorage.removeItem(SESSION_RECOVERY_KEY); }} className="px-4 py-2 bg-black/15 text-black font-black text-xs uppercase tracking-widest hover:bg-black/30 transition-colors">Negeer</button>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Intro header */}
-                      <div className="text-center mb-12 md:mb-16">
-                        <p className="text-base md:text-lg font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-[var(--ink)] mb-4">
-                          {config.activeCouncil.length} AI-modellen analyseren tegelijk · Eén gefundeerd oordeel
-                        </p>
-                        <h1 className="text-3xl sm:text-5xl md:text-8xl font-black uppercase tracking-tighter text-black dark:text-white leading-tight">
-                          Wat wil jij weten?
-                        </h1>
-                      </div>
-
-                      <div className="relative bg-white dark:bg-zinc-900 border-2 md:border-4 border-black dark:border-zinc-700 rounded-xl p-5 sm:p-8 md:p-12 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] md:shadow-lg dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)] dark:md:shadow-[12px_12px_0px_0px_rgba(255,255,255,0.1)] focus-within:shadow-md md:focus-within:shadow-[20px_20px_0px_0px_rgba(0,0,0,1)] dark:focus-within:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)] dark:md:focus-within:shadow-[20px_20px_0px_0px_rgba(255,255,255,0.1)] transition-all">
-                        <div className="relative w-full min-h-[160px] sm:min-h-[200px] md:min-h-[350px]">
-                          {!input && !isInputFocused && (
-                            <div className="absolute top-0 left-0 pointer-events-none text-lg sm:text-2xl md:text-4xl font-black text-black/20 dark:text-white/20">
-                              <FadingPlaceholder isFocused={isInputFocused} examples={[
-                                "Moet ik van baan wisselen?",
-                                "Is kernenergie de oplossing?",
-                                "Welke markt moet ik betreden in 2026?",
-                                "Wat zijn de ethische implicaties van AGI?",
-                                "Is een vegan dieet gezonder?",
-                              ]} />
-                            </div>
-                          )}
-                          <textarea
-                            value={input}
-                            onChange={(e) => setInput(e.target.value.slice(0, 5000))}
-                            onFocus={() => setIsInputFocused(true)}
-                            onBlur={() => setIsInputFocused(false)}
-                            aria-label="Stel je vraag aan de FAINL AI-raad van experts"
-                            placeholder="Stel je vraag..."
-                            maxLength={5000}
-                            className="w-full h-full bg-transparent border-none p-0 text-lg sm:text-2xl md:text-4xl font-black text-black dark:text-white placeholder-transparent focus:ring-0 transition-all resize-none absolute top-0 left-0"
-                          />
-                          {input.length > 3000 && (
-                            <span className="absolute bottom-1 left-0 text-[10px] font-black text-black/40 dark:text-white/35 pointer-events-none">
-                              {input.length}/5000
-                            </span>
-                          )}
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => handleStart()}
-                          disabled={!input.trim()}
-                          title="Vraag het aan de Raad"
-                          className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 md:bottom-12 md:right-12 p-3 sm:p-4 md:p-8 bg-black dark:bg-[var(--action)] hover:bg-[var(--action)] dark:hover:bg-white disabled:opacity-20 disabled:grayscale text-white dark:text-black rounded-none transition-all hover:scale-105 active:scale-95 shadow-lg overflow-hidden border-2 md:border-4 border-black"
-                        >
-                          <AnimatedSendIcon />
-                        </button>
-                      </div>
-                    </div>
+                    <ChatHome
+                      input={input}
+                      onInputChange={setInput}
+                      onSubmit={() => handleStart()}
+                      isInputFocused={isInputFocused}
+                      onFocus={() => setIsInputFocused(true)}
+                      onBlur={() => setIsInputFocused(false)}
+                      turnsUsed={profile ? profile.total_turns_used : config.turnsUsed}
+                      totalTurnsAllowed={config.totalTurnsAllowed}
+                      creditsRemaining={profile ? profile.credits_remaining : config.creditsRemaining}
+                      isLifetime={profile ? profile.is_lifetime : config.isLifetime}
+                    />
                   ) : (
                     session.stage !== WorkflowStage.ERROR && (
                       <div className="animate-fade-in-up space-y-8 md:space-y-16 w-full pb-12">
@@ -1099,11 +1004,25 @@ const App: FC = () => {
                         <JourneyStepper stage={session.stage} />
 
                         {/* Query display */}
-                        <div className="bg-white dark:bg-black border-2 md:border-4 border-black dark:border-[var(--line)] rounded-none p-6 md:p-12 text-center shadow-[6px_6px_0_0_black] md:shadow-md dark:shadow-md dark:md:shadow-lg">
+                        <div className="relative bg-white dark:bg-black border-2 md:border-4 border-black dark:border-[var(--line)] rounded-none p-6 md:p-12 text-center shadow-[6px_6px_0_0_black] md:shadow-md dark:shadow-md dark:md:shadow-lg">
                           <p className="text-sm md:text-base font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-[var(--ink)] mb-4">Jouw vraag</p>
                           <p className="text-xl sm:text-3xl md:text-5xl text-black dark:text-white font-serif italic font-black tracking-tight leading-tight">
                             "{session.query}"
                           </p>
+                          {session.stage === WorkflowStage.PROCESSING_COUNCIL && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (!window.confirm('Weet je zeker dat je de lopende analyse wilt annuleren?')) return;
+                                setInput(session.query);
+                                setSession({ id: crypto.randomUUID(), stage: WorkflowStage.IDLE, query: '', councilResponses: [], debateMessages: [], reviews: [], synthesis: '' });
+                              }}
+                              className="absolute top-3 right-3 md:top-6 md:right-6 p-2 text-black/30 dark:text-white/30 hover:text-black dark:hover:text-white transition-colors"
+                              title="Vraag aanpassen"
+                            >
+                              <PenLine className="w-4 h-4" />
+                            </button>
+                          )}
                         </div>
 
                         {/* Processing progress indicator */}
@@ -1123,6 +1042,7 @@ const App: FC = () => {
                             <span className="text-[11px] font-black uppercase tracking-[0.25em] text-black/40 dark:text-white/30">
                               {session.councilResponses.length} van {config.activeCouncil.length} analyses klaar
                             </span>
+                            <WaitTimeIndicator startedAt={processingStartRef.current} />
                           </div>
                         )}
 
@@ -1194,6 +1114,16 @@ const App: FC = () => {
                                   <span className="text-[11px] font-medium text-black/40 dark:text-white/30 mt-1">Stel zelf het eindadvies samen uit de analyses</span>
                                 </button>
                               </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setInput(session.query);
+                                  setSession({ id: crypto.randomUUID(), stage: WorkflowStage.IDLE, query: '', councilResponses: [], debateMessages: [], reviews: [], synthesis: '' });
+                                }}
+                                className="text-[11px] font-bold text-black/30 dark:text-white/20 hover:text-black dark:hover:text-white transition-colors mt-2 underline underline-offset-2"
+                              >
+                                Vraag aanpassen en opnieuw starten
+                              </button>
                             </div>
                           </div>
                         )}
@@ -1210,7 +1140,7 @@ const App: FC = () => {
                         {/* Victor's verdict — rendered BELOW the council cards so it appears naturally as user scrolls */}
                          {(session.stage === WorkflowStage.SYNTHESIZING ||
                            session.stage === WorkflowStage.COMPLETED) && (
-                           <div ref={verdictRef} className="w-full bg-white dark:bg-black border-2 md:border-4 border-black dark:border-[var(--line)]/40 rounded-none overflow-hidden shadow-md md:shadow-lg">
+                           <div ref={verdictRef} tabIndex={-1} aria-label="Eindoordeel van Voorzitter Victor" className="w-full bg-white dark:bg-black border-2 md:border-4 border-black dark:border-[var(--line)]/40 rounded-none overflow-hidden shadow-md md:shadow-lg outline-none">
                             {/* Verdict header */}
                             <div className="bg-black dark:bg-zinc-800 text-white px-4 md:px-10 py-4 md:py-7 flex items-center gap-3 md:gap-4 border-b-2 border-black/20">
                               <div className="w-10 h-10 md:w-14 md:h-14 rounded-full overflow-hidden border-2 border-white/20 shrink-0 bg-zinc-700">
@@ -1263,14 +1193,28 @@ const App: FC = () => {
                                   );
                                 })()
                               ) : (
-                                <div className="h-52 flex flex-col items-center justify-center gap-5">
-                                  <div className="relative">
-                                    <div className="w-16 h-16 rounded-full border-4 border-black/10 dark:border-white/10" />
-                                    <div className="absolute inset-0 w-16 h-16 rounded-full border-4 border-transparent border-t-black dark:border-t-white animate-spin" />
+                                <div className="space-y-6 animate-pulse">
+                                  <p className="font-black text-sm uppercase tracking-[0.3em] text-black/40 dark:text-white/30 text-center mb-6">Victor stelt het oordeel op…</p>
+                                  {/* Score bars skeleton */}
+                                  <div className="flex gap-6 p-4 border-2 border-black/5 dark:border-white/5">
+                                    <div className="flex-1 space-y-2"><div className="h-3 w-20 bg-black/10 dark:bg-white/10 rounded" /><div className="h-2 w-full bg-black/10 dark:bg-white/10 rounded-full" /></div>
+                                    <div className="flex-1 space-y-2"><div className="h-3 w-24 bg-black/10 dark:bg-white/10 rounded" /><div className="h-2 w-full bg-black/10 dark:bg-white/10 rounded-full" /></div>
                                   </div>
-                                  <div className="text-center">
-                                    <p className="font-black text-sm uppercase tracking-[0.3em] text-black dark:text-white">Victor stelt het oordeel op</p>
-                                    <p className="text-xs text-black dark:text-white/40 mt-1">Alle analyses worden gewogen en samengevat…</p>
+                                  {/* H2 skeleton */}
+                                  <div className="h-8 w-3/4 bg-black/10 dark:bg-white/10 rounded border-b-4 border-black/5 dark:border-white/5" />
+                                  {/* Paragraph skeletons */}
+                                  <div className="space-y-3">
+                                    <div className="h-4 w-full bg-black/8 dark:bg-white/8 rounded" />
+                                    <div className="h-4 w-5/6 bg-black/8 dark:bg-white/8 rounded" />
+                                    <div className="h-4 w-4/5 bg-black/8 dark:bg-white/8 rounded" />
+                                  </div>
+                                  {/* H3 skeleton */}
+                                  <div className="h-6 w-1/2 bg-black/10 dark:bg-white/10 rounded mt-4" />
+                                  {/* More paragraphs */}
+                                  <div className="space-y-3">
+                                    <div className="h-4 w-full bg-black/8 dark:bg-white/8 rounded" />
+                                    <div className="h-4 w-11/12 bg-black/8 dark:bg-white/8 rounded" />
+                                    <div className="h-4 w-3/4 bg-black/8 dark:bg-white/8 rounded" />
                                   </div>
                                 </div>
                               )}
@@ -1301,9 +1245,37 @@ const App: FC = () => {
                               >
                                 Kopieer eindoordeel
                               </button>
+                              {typeof navigator.share === 'function' && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const title = `FAINL Eindoordeel: ${session.query.slice(0, 50)}…`;
+                                    const text = (session.synthesis || '').slice(0, 200) + '… Lees het volledige oordeel op fainl.com';
+                                    navigator.share({ title, text, url: 'https://fainl.com' }).catch(() => {});
+                                  }}
+                                  className="btn-ghost text-xs"
+                                >
+                                  Deel
+                                </button>
+                              )}
                             </div>
 
                             <FeedbackWidget sessionId={session.id} />
+
+                            {/* Account conversion banner for anonymous first-session users */}
+                            {!authSession && config.turnsUsed <= 2 && (
+                              <div className="w-full max-w-lg bg-zinc-50 dark:bg-zinc-900 border-2 border-black/10 dark:border-white/10 p-4 text-center animate-in fade-in slide-in-from-bottom-2 duration-500">
+                                <p className="text-sm font-bold text-black dark:text-white mb-2">Je eerste AI-raadsoordeel!</p>
+                                <p className="text-xs text-black/60 dark:text-white/50 mb-3">Maak een gratis account aan om dit op te slaan en meer sessies te ontgrendelen.</p>
+                                <button
+                                  type="button"
+                                  onClick={() => navigate('/login')}
+                                  className="px-6 py-2 bg-black dark:bg-[var(--action)] text-white dark:text-black text-xs font-black uppercase tracking-widest hover:bg-[var(--action)] hover:text-black transition-all"
+                                >
+                                  Gratis account aanmaken
+                                </button>
+                              </div>
+                            )}
 
                             <p className="text-xs text-zinc-400 dark:text-zinc-600 uppercase tracking-widest font-bold">
                               Sessie opgeslagen in Mijn FAINL's
@@ -1323,6 +1295,7 @@ const App: FC = () => {
                                     synthesis: ''
                                   });
                                   setInput('');
+                                  navigate('/');
                                 }}
                                 className="btn-send"
                               >
