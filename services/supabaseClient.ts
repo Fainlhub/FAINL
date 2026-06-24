@@ -3,18 +3,22 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl) {
-  console.error('VITE_SUPABASE_URL is missing! Check your GitHub Variables/Secrets.');
-}
-if (!supabaseAnonKey) {
-  console.error('VITE_SUPABASE_ANON_KEY is missing! Check your GitHub Variables/Secrets.');
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.warn(
+    'VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY is missing — Supabase features will be unavailable. ' +
+    'Set these in your environment variables (Vercel dashboard, GitHub Secrets, or .env).'
+  );
 }
 
-export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '', {
-  auth: {
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
-    flowType: 'implicit',
-    persistSession: true,
-  },
-});
+export const supabase = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseAnonKey || 'placeholder',
+  {
+    auth: {
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+      flowType: 'implicit',
+      persistSession: true,
+    },
+  }
+);

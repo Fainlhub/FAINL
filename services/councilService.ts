@@ -2,10 +2,9 @@ import { CouncilMember, CouncilResponse, PeerReview, ModelProvider, AppConfig, D
 import { SYSTEM_PROMPTS } from "../constants";
 import { parseCompartments } from "./parser";
 
-// Supabase project URL and anon key — read from env only (no hardcoded fallbacks)
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
-const PROXY_URL = `${SUPABASE_URL}/functions/v1/ai-proxy`;
+const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL || '') as string;
+const SUPABASE_ANON_KEY = (import.meta.env.VITE_SUPABASE_ANON_KEY || '') as string;
+const PROXY_URL = SUPABASE_URL ? `${SUPABASE_URL}/functions/v1/ai-proxy` : '';
 
 // Providers handled server-side via the Edge Function — no API keys needed in the browser
 const PROXIED_PROVIDERS = new Set<ModelProvider>([
