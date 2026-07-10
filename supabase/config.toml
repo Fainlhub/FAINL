@@ -1,0 +1,16 @@
+project_id = "wckeqplxleycbiijgklv"
+
+# These functions are called directly from the browser with only the anon key
+# (no per-user session). verify_jwt must stay false, otherwise Supabase's gateway
+# rejects the browser's automatic CORS preflight (OPTIONS) before it ever reaches
+# our own corsHeaders handling in index.ts, causing:
+#   "Response to preflight request doesn't pass access control check:
+#    It does not have HTTP ok status."
+[functions.ai-proxy]
+verify_jwt = false
+
+[functions.create-payment]
+verify_jwt = false
+
+[functions.send-contact-email]
+verify_jwt = false
