@@ -433,6 +433,19 @@ const App: FC = () => {
       return;
     }
 
+    // All hosted models use one Edge Function. Check it before deducting a
+    // credit, otherwise an unavailable Supabase project charges failed runs.
+    try {
+      await councilService.current.assertProxyAvailable();
+    } catch (error) {
+      setSession((prev: SessionState) => ({
+        ...prev,
+        stage: WorkflowStage.ERROR,
+        error: error instanceof Error ? error.message : 'De AI-backend is onbereikbaar.',
+      }));
+      return;
+    }
+
     // Deduct credit — inclusion users use inclusion credits, others use regular credits
     if (authSession?.user && inclusionStatus?.is_inclusion) {
       const { data: incData, error: incError } = await supabase.rpc('use_inclusion_credit', {
@@ -500,7 +513,10 @@ const App: FC = () => {
         }
       );
 
-      if (responses.length === 0) {
+      const successfulResponses = responses.filter(response =>
+        !/^\[(?:Error|Unauthorized|Skipped)\]/.test(response.content)
+      );
+      if (successfulResponses.length === 0) {
         setSession((prev: SessionState) => ({
           ...prev,
           stage: WorkflowStage.ERROR,

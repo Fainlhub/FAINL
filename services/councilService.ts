@@ -6,6 +6,9 @@ const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL || '') as string;
 const SUPABASE_ANON_KEY = (import.meta.env.VITE_SUPABASE_ANON_KEY || '') as string;
 const PROXY_URL = SUPABASE_URL ? `${SUPABASE_URL}/functions/v1/ai-proxy` : '';
 
+const PROXY_CONFIGURATION_ERROR =
+  'De AI-backend is niet geconfigureerd. Stel VITE_SUPABASE_URL en VITE_SUPABASE_ANON_KEY in.';
+
 // Providers handled server-side via the Edge Function — no API keys needed in the browser
 const PROXIED_PROVIDERS = new Set<ModelProvider>([
   ModelProvider.GOOGLE,
@@ -69,6 +72,40 @@ export class UnifiedCouncilService {
 
   public getReadyMembers(members: CouncilMember[]): CouncilMember[] {
     return members.filter(m => this.isProviderReady(m.provider));
+  }
+
+  /**
+   * Verify the shared Edge Function before charging a credit or starting seven
+   * parallel requests. The function handles OPTIONS without invoking a model.
+   */
+  public async assertProxyAvailable(): Promise<void> {
+    if (!PROXY_URL || !SUPABASE_ANON_KEY) {
+      throw new Error(PROXY_CONFIGURATION_ERROR);
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8_000);
+    try {
+      const response = await fetch(PROXY_URL, {
+        method: 'OPTIONS',
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        },
+        signal: controller.signal,
+      });
+      if (!response.ok) {
+        throw new Error(`De AI-backend antwoordt met HTTP ${response.status}.`);
+      }
+    } catch (error) {
+      if (error instanceof Error && error.message.startsWith('De AI-backend')) throw error;
+      throw new Error(
+        'De AI-backend is onbereikbaar. Controleer of het Supabase-project actief is, ' +
+        'VITE_SUPABASE_URL naar dat project wijst en de Edge Function ai-proxy is gedeployed.'
+      );
+    } finally {
+      clearTimeout(timeoutId);
+    }
   }
 
   // ─── Proxy calls ────────────────────────────────────────────────────────────

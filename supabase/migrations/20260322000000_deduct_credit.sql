@@ -13,6 +13,12 @@ DECLARE
   v_turns     integer;
   v_lifetime  boolean;
 BEGIN
+  -- This privileged RPC may only mutate the caller's own profile.
+  IF (SELECT auth.uid()) IS NULL OR (SELECT auth.uid()) <> p_user_id THEN
+    RAISE EXCEPTION 'not authorized'
+      USING ERRCODE = '42501';
+  END IF;
+
   -- Lock the row for this user exclusively to prevent concurrent updates
   SELECT credits_remaining, total_turns_used, is_lifetime
     INTO v_credits, v_turns, v_lifetime
@@ -54,6 +60,6 @@ BEGIN
 END;
 $$;
 
--- Only the authenticated user or service role can call this function
+-- Only authenticated users can call this function; the body enforces ownership.
 REVOKE ALL ON FUNCTION public.deduct_credit(uuid) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.deduct_credit(uuid) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.deduct_credit(uuid) TO authenticated;
