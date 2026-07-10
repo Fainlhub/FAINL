@@ -103,3 +103,4 @@ Voor productie/Vercel:
 ## Deployment
 
 Elke push naar `main` triggert de GitHub Actions workflow (`.github/workflows/deploy.yml`) die de app bouwt en naar GitHub Pages deployt. De `public/404.html` is een kopie van `index.html` — dit zorgt voor correcte SPA-routing zonder server-side redirects.
+# FAINL
