@@ -272,12 +272,12 @@
     <!-- App bundle -->
 
     <!-- Google Analytics — loaded AFTER content, non-blocking -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-9DL89GBSH8"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-S3GL5DV7PF"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', 'G-9DL89GBSH8', { send_page_view: true });
+      gtag('config', 'G-S3GL5DV7PF', { send_page_view: true });
     </script>
   </body>
 </html>
