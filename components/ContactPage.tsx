@@ -17,12 +17,9 @@ export const ContactPage: FC = () => {
         setErrorMessage('');
 
         try {
-            const { data, error } = await supabase.functions.invoke('send-contact-email', {
-                body: { name, payload }
-            });
+            const { error } = await supabase.from('contact_submissions').insert({ name, message: payload });
 
             if (error) throw error;
-            if (data?.error) throw new Error(data.error);
 
             setStatus('success');
             setTimeout(() => {
