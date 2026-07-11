@@ -40,14 +40,11 @@ export const AuthCallbackPage: FC = () => {
   const navigate = useNavigate();
   const [routeSearchParams] = useSearchParams();
   const [error, setError] = useState<string | null>(null);
-  const hasStartedRef = useRef(false);
+  const finishSignInRef = useRef<Promise<string> | null>(null);
   const destinationPath = getPostAuthDestination(getCallbackParams());
   const destinationLabel = getPostAuthDestinationLabel(destinationPath);
 
   useEffect(() => {
-    if (hasStartedRef.current) return;
-    hasStartedRef.current = true;
-
     let isActive = true;
 
     const finishSignIn = async () => {
@@ -70,10 +67,8 @@ export const AuthCallbackPage: FC = () => {
       if (sessionError) throw sessionError;
 
       if (existingSession) {
-        if (isActive) {
-          navigate(destination, { replace: true });
-        }
-        return;
+        window.dispatchEvent(new CustomEvent('fainl-auth-updated'));
+        return destination;
       }
 
       const authCode = searchParams.get('code');
@@ -90,12 +85,19 @@ export const AuthCallbackPage: FC = () => {
         throw new Error('No auth session was returned by Supabase.');
       }
 
+      window.dispatchEvent(new CustomEvent('fainl-auth-updated'));
+      return destination;
+    };
+
+    if (!finishSignInRef.current) {
+      finishSignInRef.current = finishSignIn();
+    }
+
+    finishSignInRef.current.then((destination) => {
       if (isActive) {
         navigate(destination, { replace: true });
       }
-    };
-
-    finishSignIn().catch((err: unknown) => {
+    }).catch((err: unknown) => {
       if (!isActive) return;
       const message = err instanceof Error ? err.message : 'Authentication failed.';
       setError(message);

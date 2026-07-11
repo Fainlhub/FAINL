@@ -51,13 +51,13 @@ import {
 } from "react-router-dom";
 import { SEO } from "./components/SEO";
 const LoginPage = lazy(() => import("./components/LoginPage").then(m => ({ default: m.LoginPage })));
-import { Session } from "@supabase/supabase-js";
 import { CookieConsent } from "./components/CookieConsent";
 const LandingPage = lazy(() => import("./components/LandingPage").then(m => ({ default: m.LandingPage })));
 import { useLanguage } from "./contexts/LanguageContext";
 import { AppShell } from "./components/layout/AppShell";
 import { ChatHome } from "./components/ChatHome";
 import { ChatView } from "./components/chat/ChatView";
+import { useAuth } from "./contexts/AuthContext";
 
 
 // Helper components (parseVerdictScores, ScoreBar, FeedbackWidget, WaitTimeIndicator,
@@ -152,6 +152,7 @@ const PaymentSuccessPage: FC = () => {
 
 const App: FC = () => {
   const { t, language } = useLanguage();
+  const { authSession, profile, fetchProfile } = useAuth();
   const navigate = useNavigate();
 
   const defaultConfig = {
@@ -242,8 +243,6 @@ const App: FC = () => {
 
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
   const [showOutofCreditsUpsell, setShowOutofCreditsUpsell] = useState(false);
-  const [authSession, setAuthSession] = useState<Session | null>(null);
-  const [profile, setProfile] = useState<{ credits_remaining: number; total_turns_used: number; is_lifetime: boolean } | null>(null);
   const [inclusionStatus, setInclusionStatus] = useState<{ is_inclusion: boolean; remaining?: number; monthly_limit?: number } | null>(null);
 
   const fetchInclusionStatus = async (userId?: string) => {
@@ -254,21 +253,13 @@ const App: FC = () => {
     } catch { setInclusionStatus(null); }
   };
 
+  const authUserId = authSession?.user?.id;
+
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setAuthSession(session);
-      fetchProfile(session?.user?.id);
-      fetchInclusionStatus(session?.user?.id);
-      syncCloudHistory(session?.user?.id);
-    });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setAuthSession(session);
-      fetchProfile(session?.user?.id);
-      fetchInclusionStatus(session?.user?.id);
-      syncCloudHistory(session?.user?.id);
-    });
-    return () => subscription.unsubscribe();
-  }, []);
+    fetchInclusionStatus(authUserId);
+    syncCloudHistory(authUserId);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authUserId]);
 
   const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -312,28 +303,6 @@ const App: FC = () => {
       }
     } catch (e) {
       console.error('Cloud-sessiehistorie synchroniseren mislukt:', e);
-    }
-  };
-
-  const fetchProfile = async (userId?: string) => {
-    if (!userId) {
-      setProfile(null);
-      return;
-    }
-    const { data, error } = await supabase.from('user_profiles').select('*').eq('id', userId).single();
-    if (error) {
-      // If no profile exists yet, create one
-      if (error.code === 'PGRST116') {
-         const { data: newProfile } = await supabase.from('user_profiles').insert({
-           id: userId,
-           credits_remaining: 0,
-           total_turns_used: 0,
-           is_lifetime: false,
-         }).select().single();
-         if (newProfile) setProfile(newProfile);
-      }
-    } else if (data) {
-      setProfile(data);
     }
   };
 
@@ -521,11 +490,7 @@ const App: FC = () => {
         }));
         return;
       }
-      setProfile(p => p ? {
-        ...p,
-        credits_remaining: rpcData.credits_remaining,
-        total_turns_used: rpcData.total_turns_used,
-      } : null);
+      fetchProfile(authSession.user.id);
     } else {
       // Fallback local storage for backward compat edge cases, though handleStart blocks it.
       setConfig((current: AppConfig) => {

@@ -3,6 +3,7 @@ import {
   useContext,
   useState,
   useEffect,
+  useCallback,
   FC,
   ReactNode,
 } from "react";
@@ -36,7 +37,7 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [authSession, setAuthSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
 
-  const fetchProfile = async (userId?: string) => {
+  const fetchProfile = useCallback(async (userId?: string) => {
     if (!userId) {
       setProfile(null);
       return;
@@ -64,7 +65,29 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
     } else if (data) {
       setProfile(data);
     }
-  };
+  }, []);
+
+  const applySession = useCallback((session: Session | null) => {
+    setAuthSession(session);
+    window.setTimeout(() => {
+      fetchProfile(session?.user?.id);
+    }, 0);
+  }, [fetchProfile]);
+
+  const refreshSession = useCallback(async () => {
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession();
+
+    if (error) {
+      console.error("Supabase sessie ophalen mislukt:", error);
+      applySession(null);
+      return;
+    }
+
+    applySession(session);
+  }, [applySession]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -72,19 +95,18 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
   };
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setAuthSession(session);
-      fetchProfile(session?.user?.id);
-    });
+    refreshSession();
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setAuthSession(session);
-      fetchProfile(session?.user?.id);
+      applySession(session);
     });
-    return () => subscription.unsubscribe();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    window.addEventListener('fainl-auth-updated', refreshSession);
+    return () => {
+      subscription.unsubscribe();
+      window.removeEventListener('fainl-auth-updated', refreshSession);
+    };
+  }, [applySession, refreshSession]);
 
   return (
     <AuthContext.Provider

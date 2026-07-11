@@ -8,6 +8,8 @@ import { ChatProvider } from "./contexts/ChatContext";
 
 import { BrowserRouter } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {
@@ -23,6 +25,8 @@ root.render(
           <AuthProvider>
             <ChatProvider>
               <App />
+              <Analytics />
+              <SpeedInsights />
             </ChatProvider>
           </AuthProvider>
         </LanguageProvider>
