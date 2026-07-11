@@ -1482,6 +1482,29 @@ html.dark .panel-link-btn--danger { color: #f2b8b5; }
 .login-gate-logo-icon { color: #fff; width: 22px; height: 22px; }
 .login-gate-title { font-family: var(--f-display); font-size: 18px; font-weight: 700; color: #111; letter-spacing: -0.02em; margin-bottom: 7px; }
 .login-gate-sub { font-size: 13px; color: #666; line-height: 1.6; max-width: 320px; margin: 0 auto; }
+.login-gate-destination {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  background: #fafafa;
+  text-align: center;
+}
+.login-gate-destination-label {
+  color: #777;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.login-gate-destination-value {
+  color: #111;
+  font-size: 14px;
+  font-weight: 800;
+}
 
 .login-gate-social-btn {
   display: flex;

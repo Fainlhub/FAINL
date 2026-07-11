@@ -1,6 +1,13 @@
 const AUTH_CALLBACK_PATH = '/auth/callback';
 const DEFAULT_POST_AUTH_PATH = '/dashboard';
 const CANONICAL_HOSTS = new Set(['fainl.com', 'www.fainl.com']);
+const POST_AUTH_DESTINATION_LABELS: Record<string, string> = {
+  '/': 'FAINL chat',
+  '/dashboard': 'je FAINL dashboard',
+  '/mission': 'je nieuwe FAINL sessie',
+  '/tokens': 'credits en abonnementen',
+  '/inclusie': 'voucher inwisselen',
+};
 
 const configuredSiteOrigin = () => {
   const configuredUrl =
@@ -50,4 +57,9 @@ export const getAuthRedirectUrl = (nextPath = DEFAULT_POST_AUTH_PATH) => {
 
 export const getPostAuthDestination = (searchParams: URLSearchParams) => {
   return normalizePostAuthPath(searchParams.get('next'));
+};
+
+export const getPostAuthDestinationLabel = (nextPath: string | null | undefined) => {
+  const destination = normalizePostAuthPath(nextPath);
+  return POST_AUTH_DESTINATION_LABELS[destination] ?? destination;
 };

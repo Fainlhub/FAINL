@@ -1,7 +1,11 @@
 import { useState, FC, FormEvent } from 'react';
 import { Shield, Github, Mail, ArrowRight, Loader2 } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
-import { getAuthRedirectUrl, normalizePostAuthPath } from '../services/authRedirect';
+import {
+  getAuthRedirectUrl,
+  getPostAuthDestinationLabel,
+  normalizePostAuthPath,
+} from '../services/authRedirect';
 import { supabase } from '../services/supabaseClient';
 
 interface LoginPageProps {
@@ -10,6 +14,8 @@ interface LoginPageProps {
 
 export const LoginPage: FC<LoginPageProps> = ({ onLoginSuccess }) => {
   const [searchParams] = useSearchParams();
+  const postAuthPath = normalizePostAuthPath(searchParams.get('next'));
+  const postAuthLabel = getPostAuthDestinationLabel(postAuthPath);
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -20,7 +26,7 @@ export const LoginPage: FC<LoginPageProps> = ({ onLoginSuccess }) => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: getAuthRedirectUrl(normalizePostAuthPath(searchParams.get('next')))
+          redirectTo: getAuthRedirectUrl(postAuthPath)
         }
       });
       if (error) throw error;
@@ -40,7 +46,7 @@ export const LoginPage: FC<LoginPageProps> = ({ onLoginSuccess }) => {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: getAuthRedirectUrl(normalizePostAuthPath(searchParams.get('next'))),
+          emailRedirectTo: getAuthRedirectUrl(postAuthPath),
         },
       });
       if (error) throw error;
@@ -64,8 +70,13 @@ export const LoginPage: FC<LoginPageProps> = ({ onLoginSuccess }) => {
           </div>
           <h2 className="login-gate-title">Inloggen</h2>
           <p className="login-gate-sub">
-            Log in om je sessiegeschiedenis op te slaan en credits te beheren
+            Log in bij FAINL om je sessies, credits en account veilig te beheren.
           </p>
+        </div>
+
+        <div className="login-gate-destination" aria-live="polite">
+          <span className="login-gate-destination-label">Na inloggen ga je naar</span>
+          <span className="login-gate-destination-value">{postAuthLabel}</span>
         </div>
 
         {/* Feedback message */}
@@ -87,7 +98,7 @@ export const LoginPage: FC<LoginPageProps> = ({ onLoginSuccess }) => {
               className="login-gate-social-icon"
               alt="Google"
             />
-            Doorgaan met Google
+            Inloggen bij FAINL met Google
           </button>
 
           <button
@@ -96,7 +107,7 @@ export const LoginPage: FC<LoginPageProps> = ({ onLoginSuccess }) => {
             className="login-gate-social-btn"
           >
             <Github className="login-gate-social-icon" />
-            Doorgaan met GitHub
+            Inloggen bij FAINL met GitHub
           </button>
         </div>
 
@@ -139,7 +150,7 @@ export const LoginPage: FC<LoginPageProps> = ({ onLoginSuccess }) => {
 
         {/* Footer */}
         <p className="login-gate-footer">
-          Veilige authenticatie via Supabase. Wij slaan geen wachtwoorden op.
+          FAINL gebruikt beveiligde login. We slaan je Google- of GitHub-wachtwoord nooit op.
         </p>
       </div>
     </div>
