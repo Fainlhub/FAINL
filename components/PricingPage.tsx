@@ -145,6 +145,7 @@ export const PricingPage: FC<PricingPageProps> = ({
                 <li className="flex items-center gap-2 text-sm font-bold text-black dark:text-white"><CheckIcon /> <span>{language === 'nl' ? 'Hogere prioriteit' : 'Higher priority'}</span></li>
                 <li className="flex items-center gap-2 text-sm font-bold text-black dark:text-white"><CheckIcon /> <span>{language === 'nl' ? 'Directe beraadslaging' : 'Instant deliberation'}</span></li>
                 <li className="flex items-center gap-2 text-sm font-bold text-black dark:text-white"><CheckIcon /> <span>Multi AI inzet</span></li>
+                <li className="flex items-center gap-2 text-sm font-bold text-black dark:text-white"><CheckIcon /> <span>{language === 'nl' ? 'Eigen API-sleutels gebruiken' : 'Use your own API keys'}</span></li>
                 <li className="flex items-center gap-2 text-sm font-bold text-black dark:text-white"><CheckIcon /> <span>{language === 'nl' ? 'Exclusieve modellen' : 'Exclusive models'}</span></li>
               </ul>
 

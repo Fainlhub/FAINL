@@ -1,13 +1,14 @@
 import { FC, useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowUp } from 'lucide-react';
-import { ChatTier } from '../../types';
-import { TierSelector } from './TierSelector';
+import { CouncilMember } from '../../types';
+import { ModelSelector } from './ModelSelector';
 
 interface ChatComposerProps {
   onSend: (content: string) => void;
   disabled: boolean;
-  tier: ChatTier;
-  onTierChange: (t: ChatTier) => void;
+  models: CouncilMember[];
+  selectedModelIds: string[];
+  onModelSelectionChange: (ids: string[]) => void;
   isLoggedIn: boolean;
   byokEnabled: boolean;
   autoFocus?: boolean;
@@ -20,8 +21,9 @@ const LINE_HEIGHT = 24;
 export const ChatComposer: FC<ChatComposerProps> = ({
   onSend,
   disabled,
-  tier,
-  onTierChange,
+  models,
+  selectedModelIds,
+  onModelSelectionChange,
   isLoggedIn,
   byokEnabled,
   autoFocus,
@@ -66,9 +68,10 @@ export const ChatComposer: FC<ChatComposerProps> = ({
         aria-label="Stel je vraag"
       />
       <div className="chathome-bar">
-        <TierSelector
-          tier={tier}
-          onChange={onTierChange}
+        <ModelSelector
+          models={models}
+          selectedIds={selectedModelIds}
+          onChange={onModelSelectionChange}
           isLoggedIn={isLoggedIn}
           byokEnabled={byokEnabled}
           disabled={disabled}

@@ -117,6 +117,12 @@ export interface NodeTrace {
 export interface ThinkingMetadata {
   creditsSpent?: number;
   byok?: boolean;
+  selectedModels?: {
+    id: string;
+    name: string;
+    provider: string;
+    modelId: string;
+  }[];
   nodeTraces?: NodeTrace[];
   reviews?: PeerReview[];
   durationMs?: number;

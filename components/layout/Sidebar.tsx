@@ -37,7 +37,9 @@ import { ThemePref } from './theme';
 interface SidebarProps {
   collapsed: boolean;
   mobileOpen?: boolean;
+  width: number;
   onToggle: () => void;
+  onResize: (width: number) => void;
   darkMode: boolean;
   onToggleTheme: () => void;
   themePref: ThemePref;
@@ -73,7 +75,9 @@ type PanelName = 'nodes' | 'designs' | 'plugins' | null;
 export const Sidebar: FC<SidebarProps> = ({
   collapsed,
   mobileOpen,
+  width,
   onToggle,
+  onResize,
   darkMode,
   onToggleTheme,
   themePref,
@@ -104,6 +108,7 @@ export const Sidebar: FC<SidebarProps> = ({
   const [moveMenuId, setMoveMenuId] = useState<string | null>(null);
   const [openProjects, setOpenProjects] = useState<Set<string>>(new Set());
   const [panel, setPanel] = useState<PanelName>(null);
+  const [isResizing, setIsResizing] = useState(false);
 
   // Content matches from the search_threads RPC (title matching stays instant
   // and client-side; the RPC also finds hits inside old answers).
@@ -228,8 +233,36 @@ export const Sidebar: FC<SidebarProps> = ({
     </div>
   );
 
+  const handleResizePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
+    if (collapsed || window.innerWidth < 1024) return;
+    event.preventDefault();
+    const startX = event.clientX;
+    const startWidth = width;
+    setIsResizing(true);
+
+    const handleMove = (moveEvent: PointerEvent) => {
+      onResize(startWidth + moveEvent.clientX - startX);
+    };
+
+    const handleUp = () => {
+      setIsResizing(false);
+      document.body.classList.remove('sidebar-resizing');
+      window.removeEventListener('pointermove', handleMove);
+      window.removeEventListener('pointerup', handleUp);
+      window.removeEventListener('pointercancel', handleUp);
+    };
+
+    document.body.classList.add('sidebar-resizing');
+    window.addEventListener('pointermove', handleMove);
+    window.addEventListener('pointerup', handleUp);
+    window.addEventListener('pointercancel', handleUp);
+  };
+
   return (
-    <aside className={`sidebar${collapsed ? ' collapsed' : ''}${mobileOpen ? ' mobile-open' : ''}`}>
+    <aside
+      className={`sidebar${collapsed ? ' collapsed' : ''}${mobileOpen ? ' mobile-open' : ''}${isResizing ? ' resizing' : ''}`}
+      style={{ '--sb-w': `${width}px` } as React.CSSProperties}
+    >
       <button
         className="sidebar-toggle-btn"
         onClick={onToggle}
@@ -238,6 +271,13 @@ export const Sidebar: FC<SidebarProps> = ({
       >
         <ChevronLeft />
       </button>
+      <button
+        type="button"
+        className="sidebar-resize-handle"
+        onPointerDown={handleResizePointerDown}
+        aria-label="Sidebar breedte aanpassen"
+        title="Sleep om de sidebar breder of smaller te maken"
+      />
 
       {/* Logo */}
       <button className="sidebar-logo" onClick={() => go(() => navigate('/'))} aria-label="FAINL — naar startpagina">
@@ -330,7 +370,7 @@ export const Sidebar: FC<SidebarProps> = ({
         <button className="flyout-btn flyout-btn--spread" onClick={() => setPanel('nodes')}>
           <span className="flyout-btn__icon-label">
             <Settings2 className="flyout-icon" />
-            <span>Node-configuratie</span>
+            <span>Modelinstellingen</span>
           </span>
         </button>
         <button className="flyout-btn flyout-btn--spread" onClick={() => setPanel('designs')}>

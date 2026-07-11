@@ -3,11 +3,6 @@ import { Brain, Check, ChevronDown, CircleAlert, Loader2 } from 'lucide-react';
 import { NodeTrace, PeerReview } from '../../types';
 import { NodeStatus } from '../../contexts/ChatContext';
 
-// The Thinking UX: while nodes run, a live "Thinking… (N nodes)" strip; after
-// completion an expandable panel with each node's reasoning and the merge step.
-// Deliberately neutral — no personas, no council jargon, no scores on the
-// foreground. Verification of the answer lives in the consensus module.
-
 interface ThinkingBlockProps {
   pending?: NodeStatus[] | null;
   traces?: NodeTrace[];
@@ -18,7 +13,7 @@ interface ThinkingBlockProps {
 export const ThinkingBlock: FC<ThinkingBlockProps> = ({ pending, traces, reviews, durationMs }) => {
   const [expanded, setExpanded] = useState(false);
   const isRunning = !!pending?.length;
-  const nodeCount = pending?.length ?? traces?.length ?? 0;
+  const modelCount = pending?.length ?? traces?.length ?? 0;
   if (!isRunning && !traces?.length) return null;
 
   return (
@@ -26,7 +21,7 @@ export const ThinkingBlock: FC<ThinkingBlockProps> = ({ pending, traces, reviews
       <button
         type="button"
         className="thinking-header"
-        onClick={() => setExpanded(e => !e)}
+        onClick={() => setExpanded(value => !value)}
         aria-expanded={expanded}
       >
         {isRunning
@@ -34,14 +29,14 @@ export const ThinkingBlock: FC<ThinkingBlockProps> = ({ pending, traces, reviews
           : <Brain className="thinking-icon" />}
         <span className="thinking-label">
           {isRunning
-            ? `Thinking… (${nodeCount} nodes)`
-            : `Thinking — ${nodeCount} nodes${durationMs ? ` · ${(durationMs / 1000).toFixed(1)}s` : ''}`}
+            ? `Modellen antwoorden... (${modelCount})`
+            : `${modelCount} modellen${durationMs ? ` - ${(durationMs / 1000).toFixed(1)}s` : ''}`}
         </span>
         {isRunning && (
           <span className="thinking-progress">
-            {pending!.map(n => (
-              <span key={n.memberId} className={`thinking-dot ${n.status}`} title={n.name}>
-                {n.status === 'done' ? <Check /> : n.status === 'error' ? <CircleAlert /> : null}
+            {pending!.map(model => (
+              <span key={model.memberId} className={`thinking-dot ${model.status}`} title={model.name}>
+                {model.status === 'done' ? <Check /> : model.status === 'error' ? <CircleAlert /> : null}
               </span>
             ))}
           </span>
@@ -52,24 +47,28 @@ export const ThinkingBlock: FC<ThinkingBlockProps> = ({ pending, traces, reviews
       {expanded && (
         <div className="thinking-body">
           {isRunning && !traces?.length && (
-            <p className="thinking-wait">De nodes analyseren je vraag onafhankelijk van elkaar. Hun beredenering verschijnt hier zodra ze klaar zijn.</p>
+            <p className="thinking-wait">
+              De geselecteerde modellen beantwoorden je vraag parallel. Hun antwoorden verschijnen hier zodra ze klaar zijn.
+            </p>
           )}
-          {traces?.map((t, i) => (
-            <div key={t.memberId} className="thinking-trace">
-              <p className="thinking-trace-title">Node {i + 1} · {t.modelId}</p>
-              <p className="thinking-trace-content">{t.content}</p>
+          {traces?.map((trace, index) => (
+            <div key={trace.memberId} className="thinking-trace">
+              <p className="thinking-trace-title">{trace.name || `Model ${index + 1}`} - {trace.modelId}</p>
+              <p className="thinking-trace-content">{trace.content}</p>
             </div>
           ))}
           {!!reviews?.length && (
             <div className="thinking-trace">
-              <p className="thinking-trace-title">Onderlinge toetsing · {reviews.length} beoordelingen</p>
+              <p className="thinking-trace-title">Onderlinge toetsing - {reviews.length} beoordelingen</p>
               <p className="thinking-trace-content">
-                Gemiddelde score {(reviews.reduce((s, r) => s + r.score, 0) / reviews.length).toFixed(1)}/10 — de nodes hebben elkaars antwoorden beoordeeld vóór de samenvoeging.
+                Gemiddelde score {(reviews.reduce((sum, review) => sum + review.score, 0) / reviews.length).toFixed(1)}/10.
               </p>
             </div>
           )}
           {!!traces?.length && (
-            <p className="thinking-merge-note">Deze {traces.length} analyses zijn samengevoegd tot het antwoord hieronder.</p>
+            <p className="thinking-merge-note">
+              Deze {traces.length} modelantwoorden zijn samengevoegd tot het antwoord hieronder.
+            </p>
           )}
         </div>
       )}

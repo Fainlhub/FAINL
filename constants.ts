@@ -273,6 +273,71 @@ export const CHAT_TIERS: Record<ChatTier, {
 
 export const CHAT_TIER_ORDER: ChatTier[] = ['instant', 'moderate', 'complex', 'max', 'ultra'];
 
+export const CHAT_MODEL_OPTIONS: CouncilMember[] = [
+  {
+    id: 'chat-gemini-25-flash',
+    name: 'Gemini 2.5 Flash',
+    role: 'CHAT_MODEL',
+    provider: ModelProvider.GOOGLE,
+    modelId: 'gemini-2.5-flash',
+    avatar: UI_ASSETS.avatars.gerdiGemini,
+    color: 'bg-teal-900',
+    description: 'Snel Google-model voor dagelijkse vragen, samenvatten en praktisch advies.',
+  },
+  {
+    id: 'chat-claude-sonnet-4',
+    name: 'Claude Sonnet 4',
+    role: 'CHAT_MODEL',
+    provider: ModelProvider.ANTHROPIC,
+    modelId: 'claude-sonnet-4-20250514',
+    avatar: UI_ASSETS.avatars.claudiaCodea,
+    color: 'bg-blue-900',
+    description: 'Sterk in redeneren, schrijven, structureren en langere context.',
+  },
+  {
+    id: 'chat-gpt-4o-mini',
+    name: 'GPT-4o mini',
+    role: 'CHAT_MODEL',
+    provider: ModelProvider.OPENAI,
+    modelId: 'gpt-4o-mini',
+    avatar: UI_ASSETS.avatars.shopeAijna,
+    color: 'bg-indigo-900',
+    description: 'Snel OpenAI-model voor directe antwoorden en creatieve varianten.',
+  },
+  {
+    id: 'chat-deepseek-chat',
+    name: 'DeepSeek Chat',
+    role: 'CHAT_MODEL',
+    provider: ModelProvider.DEEPSEEK,
+    modelId: 'deepseek-chat',
+    avatar: UI_ASSETS.avatars.janSeekdeep,
+    color: 'bg-emerald-900',
+    description: 'Geschikt voor technische analyse, code en stapsgewijs redeneren.',
+  },
+  {
+    id: 'chat-perplexity-sonar',
+    name: 'Perplexity Sonar',
+    role: 'CHAT_MODEL',
+    provider: ModelProvider.PERPLEXITY,
+    modelId: 'sonar',
+    avatar: UI_ASSETS.avatars.mimiStral,
+    color: 'bg-violet-900',
+    description: 'Handig voor actuele vragen en brongevoelige onderwerpen.',
+  },
+  {
+    id: 'chat-gemini-20-flash',
+    name: 'Gemini 2.0 Flash',
+    role: 'CHAT_MODEL',
+    provider: ModelProvider.GOOGLE,
+    modelId: 'gemini-2.0-flash',
+    avatar: UI_ASSETS.avatars.leonardoDaLlama,
+    color: 'bg-orange-900',
+    description: 'Licht en snel model voor korte checks en snelle interacties.',
+  },
+];
+
+export const DEFAULT_CHAT_MODEL_IDS = ['chat-gemini-25-flash'];
+
 // The free Instant model. Conversational, no XML compartments, no persona
 // branding on the foreground.
 export const INSTANT_MEMBER: CouncilMember = {
@@ -323,4 +388,3 @@ REGELS:
 - Zijn de nodes het oneens over iets wezenlijks, benoem dat dan kort en neutraal in het antwoord zelf ("Er zijn twee benaderingen...").
 - Gebruik markdown waar dat helpt. Wees concreet, geen vaagtaal.`,
 };
-

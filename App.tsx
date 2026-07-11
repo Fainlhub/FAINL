@@ -154,6 +154,15 @@ const App: FC = () => {
   const { t, language } = useLanguage();
   const { authSession, profile, fetchProfile } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const rootSearchParams = new URLSearchParams(location.search);
+  const isRootAuthCallback =
+    location.pathname === '/' &&
+    (
+      rootSearchParams.has('code') ||
+      rootSearchParams.has('error') ||
+      rootSearchParams.has('error_description')
+    );
 
   const defaultConfig = {
     // API keys for proxied providers are stored server-side (Supabase Secrets).
@@ -216,7 +225,6 @@ const App: FC = () => {
     }
   });
 
-  const location = useLocation();
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
@@ -245,18 +253,10 @@ const App: FC = () => {
   const [showOutofCreditsUpsell, setShowOutofCreditsUpsell] = useState(false);
   const [inclusionStatus, setInclusionStatus] = useState<{ is_inclusion: boolean; remaining?: number; monthly_limit?: number } | null>(null);
 
-  const fetchInclusionStatus = async (userId?: string) => {
-    if (!userId) { setInclusionStatus(null); return; }
-    try {
-      const { data } = await supabase.rpc('get_inclusion_status', { p_user_id: userId });
-      if (data) setInclusionStatus(data);
-    } catch { setInclusionStatus(null); }
-  };
-
   const authUserId = authSession?.user?.id;
 
   useEffect(() => {
-    fetchInclusionStatus(authUserId);
+    setInclusionStatus(null);
     syncCloudHistory(authUserId);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authUserId]);
@@ -786,7 +786,7 @@ const App: FC = () => {
         <Suspense fallback={<div className="flex items-center justify-center min-h-[40vh]"><div className="w-6 h-6 border-2 border-black/20 border-t-black dark:border-white/20 dark:border-t-white rounded-full animate-spin" /></div>}>
         <Routes>
           {/* Home — multi-turn chat (nodes werken samen achter Thinking) */}
-          <Route path="/" element={<ChatView />} />
+          <Route path="/" element={isRootAuthCallback ? <AuthCallbackPage /> : <ChatView />} />
           <Route path="/chat/:threadId" element={<ChatView />} />
 
           {/* Landing / Welcome page */}

@@ -1,5 +1,18 @@
 import { FC, useState } from 'react';
-import { ArrowDown, ArrowUp, Check, Eye, EyeOff, KeyRound, Loader2, ShieldCheck, Trash2, X, CircleAlert } from 'lucide-react';
+import {
+  ArrowDown,
+  ArrowUp,
+  Check,
+  CircleAlert,
+  Eye,
+  EyeOff,
+  KeyRound,
+  Loader2,
+  Lock,
+  ShieldCheck,
+  Trash2,
+  X,
+} from 'lucide-react';
 import { CouncilMember } from '../../types';
 import { DEFAULT_COUNCIL } from '../../constants';
 import { useChat } from '../../contexts/ChatContext';
@@ -19,13 +32,13 @@ interface NodeConfigPanelProps {
 
 const CONFIG_KEY = 'fainl_config_v2';
 
-// Persist the node order into the shared config (the same key /mission reads),
-// preserving all other saved fields.
 function saveCouncilOrder(council: CouncilMember[]): void {
   let config: Record<string, unknown> = {};
   try {
     config = JSON.parse(localStorage.getItem(CONFIG_KEY) || '{}');
-  } catch { /* corrupt config: rebuild */ }
+  } catch {
+    // Rebuild corrupt local config.
+  }
   config.activeCouncil = council;
   localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
 }
@@ -33,7 +46,7 @@ function saveCouncilOrder(council: CouncilMember[]): void {
 type VerifyState = 'idle' | 'busy' | 'ok' | 'fail';
 
 export const NodeConfigPanel: FC<NodeConfigPanelProps> = ({ onClose }) => {
-  const { byokEnabled, setByokEnabled } = useChat();
+  const { byokEnabled, byokAllowed, setByokEnabled } = useChat();
   const [council, setCouncil] = useState<CouncilMember[]>(() => getActiveCouncil());
   const [keys, setKeys] = useState(() => getByokKeys());
   const [showKeys, setShowKeys] = useState(false);
@@ -54,12 +67,14 @@ export const NodeConfigPanel: FC<NodeConfigPanelProps> = ({ onClose }) => {
   };
 
   const handleKeyChange = (provider: ByokProvider, value: string) => {
+    if (!byokAllowed) return;
     setByokKey(provider, value.trim());
     setKeys(getByokKeys());
     setVerifyState(prev => ({ ...prev, [provider]: 'idle' }));
   };
 
   const handleVerify = async (provider: ByokProvider) => {
+    if (!byokAllowed) return;
     const key = keys[provider];
     if (!key) return;
     setVerifyState(prev => ({ ...prev, [provider]: 'busy' }));
@@ -79,14 +94,13 @@ export const NodeConfigPanel: FC<NodeConfigPanelProps> = ({ onClose }) => {
     <div className="panel-backdrop" onClick={onClose}>
       <div className="panel-card panel-card--wide" onClick={e => e.stopPropagation()}>
         <div className="panel-head">
-          <h2 className="panel-title">Node-configuratie</h2>
+          <h2 className="panel-title">Modelinstellingen</h2>
           <button className="panel-close" onClick={onClose} aria-label="Sluiten"><X /></button>
         </div>
 
-        {/* Node order */}
-        <p className="panel-section-label">Volgorde van nodes</p>
+        <p className="panel-section-label">Volgorde Hoge Raad</p>
         <p className="panel-text">
-          De volgorde bepaalt wie meedoet per thinking-niveau: de eerste 3 nodes vormen Moderate, de eerste 5 Complex, alle 7 Max en Ultra.
+          Deze volgorde geldt voor de multiconsensus-tool met Victor. In de gewone chat kies je modellen direct in de invoerbalk.
         </p>
         <div className="nodeconfig-list">
           {council.map((member, i) => (
@@ -103,20 +117,25 @@ export const NodeConfigPanel: FC<NodeConfigPanelProps> = ({ onClose }) => {
         </div>
         <button className="panel-link-btn" onClick={resetOrder}>Standaardvolgorde herstellen</button>
 
-        {/* BYOK */}
         <div className="panel-divider" />
         <p className="panel-section-label"><KeyRound className="panel-inline-icon" /> Eigen sleutels (BYOK)</p>
         <p className="panel-text">
-          <ShieldCheck className="panel-inline-icon" /> Sleutels blijven op dit apparaat en gaan alléén rechtstreeks van je browser naar de AI-provider — nooit via FAINL-servers. Met eigen sleutels betaal je 0 credits per antwoord.
+          <ShieldCheck className="panel-inline-icon" /> Sleutels blijven op dit apparaat en gaan rechtstreeks van je browser naar de AI-provider. BYOK is beschikbaar voor Pro- en lifetime-gebruikers.
         </p>
+        {!byokAllowed && (
+          <p className="panel-lock-note">
+            <Lock className="panel-inline-icon" /> Upgrade naar Pro om eigen sleutels te gebruiken binnen FAINL.
+          </p>
+        )}
 
-        <label className="nodeconfig-toggle">
+        <label className={`nodeconfig-toggle${!byokAllowed ? ' nodeconfig-toggle--locked' : ''}`}>
           <input
             type="checkbox"
-            checked={byokEnabled}
+            checked={byokAllowed && byokEnabled}
+            disabled={!byokAllowed}
             onChange={e => setByokEnabled(e.target.checked)}
           />
-          <span>Eigen sleutels gebruiken — 0 credits per antwoord</span>
+          <span>Eigen sleutels gebruiken - 0 FAINL credits per antwoord</span>
         </label>
 
         <div className="byok-list">
@@ -131,14 +150,15 @@ export const NodeConfigPanel: FC<NodeConfigPanelProps> = ({ onClose }) => {
                   value={keys[provider] ?? ''}
                   placeholder={BYOK_PROVIDERS[provider].keyHint}
                   onChange={e => handleKeyChange(provider, e.target.value)}
+                  disabled={!byokAllowed}
                   autoComplete="off"
                   spellCheck={false}
                 />
                 <button
                   className="byok-verify"
                   onClick={() => handleVerify(provider)}
-                  disabled={!keys[provider] || state === 'busy'}
-                  title="Sleutel testen (1 minimale testaanvraag, rechtstreeks naar de provider)"
+                  disabled={!byokAllowed || !keys[provider] || state === 'busy'}
+                  title="Sleutel testen met een minimale aanvraag rechtstreeks naar de provider"
                 >
                   {state === 'busy' ? <Loader2 className="spinning" />
                     : state === 'ok' ? <Check className="byok-ok" />
@@ -150,11 +170,11 @@ export const NodeConfigPanel: FC<NodeConfigPanelProps> = ({ onClose }) => {
           })}
         </div>
         <p className="panel-text panel-text--muted">
-          Providers zonder browser-toegang (OpenAI, DeepSeek, Mistral, Perplexity) zijn niet beschikbaar met eigen sleutels; die nodes slaan we in BYOK-modus over.
+          Providers zonder browser-toegang (OpenAI, DeepSeek, Mistral, Perplexity) zijn niet beschikbaar met eigen sleutels; die modellen slaan we in BYOK-modus over.
         </p>
 
         <div className="byok-actions">
-          <button className="panel-link-btn" onClick={() => setShowKeys(s => !s)}>
+          <button className="panel-link-btn" onClick={() => setShowKeys(value => !value)} disabled={!byokAllowed}>
             {showKeys ? <><EyeOff className="panel-inline-icon" /> Verberg sleutels</> : <><Eye className="panel-inline-icon" /> Toon sleutels</>}
           </button>
           <button className="panel-link-btn panel-link-btn--danger" onClick={handleClearAll}>

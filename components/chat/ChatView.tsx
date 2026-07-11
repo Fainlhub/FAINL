@@ -30,8 +30,9 @@ export const ChatView: FC = () => {
     isStreaming,
     pendingNodes,
     chatError,
-    tier,
-    setTier,
+    models,
+    selectedModelIds,
+    setSelectedModelIds,
     byokEnabled,
     sendMessage,
     openThread,
@@ -42,7 +43,6 @@ export const ChatView: FC = () => {
 
   const chips = useMemo(() => pickRandom(EXAMPLE_QUESTIONS, 3), []);
 
-  // Deep link: /chat/:threadId
   useEffect(() => {
     if (threadId && threadId !== activeThreadId) openThread(threadId);
   }, [threadId, activeThreadId, openThread]);
@@ -73,8 +73,8 @@ export const ChatView: FC = () => {
   return (
     <>
       <SEO
-        title="FAINL — Meerdere AI's. Eén antwoord."
-        description="Chat met meerdere AI-modellen tegelijk. Kies je thinking-niveau: van instant antwoord tot 7 nodes die samenwerken aan één antwoord."
+        title="FAINL Chat - Kies je AI-model"
+        description="Chat met FAINL zoals je gewend bent: kies een of meerdere AI-modellen en bewaar je gesprekken na login."
         canonical="/"
         keywords="AI chat, multi-model AI, AI consensus, FAINL"
       />
@@ -85,8 +85,9 @@ export const ChatView: FC = () => {
           <ChatComposer
             onSend={sendMessage}
             disabled={isStreaming}
-            tier={tier}
-            onTierChange={setTier}
+            models={models}
+            selectedModelIds={selectedModelIds}
+            onModelSelectionChange={setSelectedModelIds}
             isLoggedIn={!!authSession}
             byokEnabled={byokEnabled}
             autoFocus
@@ -100,7 +101,7 @@ export const ChatView: FC = () => {
           </div>
           {!authSession && (
             <p className="chat-anon-hint">
-              Gratis chatten op Instant-niveau. <a href="/login?next=/">Log in</a> om gesprekken te bewaren en hogere thinking-niveaus te gebruiken.
+              Gratis chatten met een model. <a href="/login?next=/">Log in</a> om gesprekken te bewaren en meerdere modellen tegelijk te kiezen.
             </p>
           )}
         </div>
@@ -116,8 +117,9 @@ export const ChatView: FC = () => {
             <ChatComposer
               onSend={sendMessage}
               disabled={isStreaming}
-              tier={tier}
-              onTierChange={setTier}
+              models={models}
+              selectedModelIds={selectedModelIds}
+              onModelSelectionChange={setSelectedModelIds}
               isLoggedIn={!!authSession}
               byokEnabled={byokEnabled}
             />

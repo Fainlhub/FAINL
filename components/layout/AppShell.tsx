@@ -10,6 +10,14 @@ interface AppShellProps {
   children: ReactNode;
 }
 
+const SIDEBAR_WIDTH_KEY = 'fainl_sidebar_width';
+const DEFAULT_SIDEBAR_WIDTH = 280;
+const MIN_SIDEBAR_WIDTH = 232;
+const MAX_SIDEBAR_WIDTH = 420;
+
+const clampSidebarWidth = (width: number) =>
+  Math.min(MAX_SIDEBAR_WIDTH, Math.max(MIN_SIDEBAR_WIDTH, Math.round(width)));
+
 export const AppShell: FC<AppShellProps> = ({ children }) => {
   const location = useLocation();
   const { authSession, handleLogout } = useAuth();
@@ -17,6 +25,12 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() =>
     localStorage.getItem('fainl_sidebar_collapsed') === 'true'
   );
+  const [sidebarWidth, setSidebarWidth] = useState(() => {
+    const stored = Number(localStorage.getItem(SIDEBAR_WIDTH_KEY));
+    return Number.isFinite(stored) && stored > 0
+      ? clampSidebarWidth(stored)
+      : DEFAULT_SIDEBAR_WIDTH;
+  });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const [themePref, setThemePref] = useState<ThemePref>(getStoredThemePref);
@@ -49,6 +63,12 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
     });
   };
 
+  const handleSidebarResize = (width: number) => {
+    const next = clampSidebarWidth(width);
+    setSidebarWidth(next);
+    localStorage.setItem(SIDEBAR_WIDTH_KEY, String(next));
+  };
+
   const userEmail = authSession?.user?.email;
   const userName =
     authSession?.user?.user_metadata?.full_name ||
@@ -74,7 +94,9 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
       <Sidebar
         collapsed={sidebarCollapsed}
         mobileOpen={mobileMenuOpen}
+        width={sidebarWidth}
         onToggle={toggleSidebar}
+        onResize={handleSidebarResize}
         darkMode={darkMode}
         onToggleTheme={() => setThemePref(darkMode ? 'light' : 'dark')}
         themePref={themePref}
@@ -86,7 +108,10 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
         onNavigate={() => setMobileMenuOpen(false)}
       />
 
-      <div className={`main-canvas${sidebarCollapsed ? ' sidebar-collapsed' : ''}`}>
+      <div
+        className={`main-canvas${sidebarCollapsed ? ' sidebar-collapsed' : ''}`}
+        style={{ '--sb-w': `${sidebarWidth}px` } as React.CSSProperties}
+      >
         <TopBar onMenuOpen={() => setMobileMenuOpen(true)} />
         <div id="main-content" role="main" aria-live="polite">
           {children}

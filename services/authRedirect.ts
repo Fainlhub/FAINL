@@ -1,6 +1,7 @@
 const AUTH_CALLBACK_PATH = '/auth/callback';
 const DEFAULT_POST_AUTH_PATH = '/dashboard';
 const CANONICAL_HOSTS = new Set(['fainl.com', 'www.fainl.com']);
+const SUPABASE_HOST_SUFFIX = '.supabase.co';
 const POST_AUTH_DESTINATION_LABELS: Record<string, string> = {
   '/': 'FAINL chat',
   '/dashboard': 'je FAINL dashboard',
@@ -18,7 +19,15 @@ const configuredSiteOrigin = () => {
   if (!configuredUrl) return null;
 
   try {
-    return new URL(configuredUrl).origin;
+    const origin = new URL(configuredUrl).origin;
+    const hostname = new URL(origin).hostname;
+
+    if (hostname.endsWith(SUPABASE_HOST_SUFFIX)) {
+      console.error('Configured site URL points to Supabase instead of the FAINL app:', configuredUrl);
+      return null;
+    }
+
+    return origin;
   } catch {
     console.error('Configured site URL is invalid:', configuredUrl);
     return null;
@@ -37,14 +46,14 @@ export const normalizePostAuthPath = (
 };
 
 export const getSiteOrigin = () => {
-  const configuredOrigin = configuredSiteOrigin();
-  if (configuredOrigin) return configuredOrigin;
-
   if (typeof window === 'undefined') return 'https://fainl.com';
 
   if (CANONICAL_HOSTS.has(window.location.hostname)) {
-    return 'https://fainl.com';
+    return window.location.origin;
   }
+
+  const configuredOrigin = configuredSiteOrigin();
+  if (configuredOrigin) return configuredOrigin;
 
   return window.location.origin;
 };

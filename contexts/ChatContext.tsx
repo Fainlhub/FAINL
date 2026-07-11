@@ -19,23 +19,20 @@ import {
   CouncilMember,
   ModelProvider,
   NodeTrace,
-  PeerReview,
   ThinkingMetadata,
 } from "../types";
 import {
-  CHAT_TIERS,
   CHAT_SYSTEM_PROMPTS,
-  INSTANT_MEMBER,
   SYNTH_AGGREGATOR,
-  SYSTEM_PROMPTS,
-  DEFAULT_COUNCIL,
   DEFAULT_CHAIRMAN,
+  CHAT_MODEL_OPTIONS,
+  DEFAULT_CHAT_MODEL_IDS,
 } from "../constants";
 import * as chatDb from "../services/chatService";
 import { getByokKeys, byokKeyFor } from "../services/byokService";
 
 const ANON_THREAD_KEY = 'fainl_anon_thread';
-const TIER_KEY = 'fainl_chat_tier';
+const MODEL_SELECTION_KEY = 'fainl_chat_model_selection';
 const BYOK_ENABLED_KEY = 'fainl_byok_enabled';
 
 export interface NodeStatus {
@@ -49,14 +46,16 @@ interface ChatContextValue {
   projects: ChatProject[];
   activeThreadId: string | null;
   messages: ChatMessage[];
-  tier: ChatTier;
-  setTier: (t: ChatTier) => void;
+  models: CouncilMember[];
+  selectedModelIds: string[];
+  setSelectedModelIds: (ids: string[]) => void;
   isStreaming: boolean;
   pendingNodes: NodeStatus[] | null;
   chatError: string | null;
   paywallOpen: boolean;
   setPaywallOpen: (open: boolean) => void;
   byokEnabled: boolean;
+  byokAllowed: boolean;
   setByokEnabled: (on: boolean) => void;
   sendMessage: (content: string) => Promise<void>;
   newThread: () => void;
@@ -96,6 +95,19 @@ function pickByokMember(base: CouncilMember): CouncilMember | null {
   return null;
 }
 
+const legacyTierForModelCount = (count: number): ChatTier => {
+  if (count <= 1) return 'instant';
+  if (count <= 3) return 'moderate';
+  if (count <= 5) return 'complex';
+  return 'max';
+};
+
+const cleanSelectedModelIds = (ids: string[]) => {
+  const validIds = new Set(CHAT_MODEL_OPTIONS.map(model => model.id));
+  const cleaned = ids.filter((id, index) => validIds.has(id) && ids.indexOf(id) === index);
+  return cleaned.length ? cleaned : DEFAULT_CHAT_MODEL_IDS;
+};
+
 export const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const { authSession, profile, fetchProfile } = useAuth();
   const userId = authSession?.user?.id ?? null;
@@ -106,25 +118,44 @@ export const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [projects, setProjects] = useState<ChatProject[]>([]);
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [tier, setTierState] = useState<ChatTier>(() => {
-    const stored = localStorage.getItem(TIER_KEY);
-    return (stored && stored in CHAT_TIERS ? stored : 'instant') as ChatTier;
+  const [selectedModelIds, setSelectedModelIdsState] = useState<string[]>(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem(MODEL_SELECTION_KEY) || 'null');
+      return cleanSelectedModelIds(Array.isArray(stored) ? stored : DEFAULT_CHAT_MODEL_IDS);
+    } catch {
+      return DEFAULT_CHAT_MODEL_IDS;
+    }
   });
   const [isStreaming, setIsStreaming] = useState(false);
   const [pendingNodes, setPendingNodes] = useState<NodeStatus[] | null>(null);
   const [chatError, setChatError] = useState<string | null>(null);
   const [paywallOpen, setPaywallOpen] = useState(false);
   const [byokEnabled, setByokEnabledState] = useState(() => localStorage.getItem(BYOK_ENABLED_KEY) === 'true');
+  const byokAllowed = !!profile?.is_lifetime;
 
-  const setTier = useCallback((t: ChatTier) => {
-    setTierState(t);
-    localStorage.setItem(TIER_KEY, t);
+  const setSelectedModelIds = useCallback((ids: string[]) => {
+    const cleaned = cleanSelectedModelIds(ids);
+    setSelectedModelIdsState(cleaned);
+    localStorage.setItem(MODEL_SELECTION_KEY, JSON.stringify(cleaned));
   }, []);
 
   const setByokEnabled = useCallback((on: boolean) => {
+    if (on && !byokAllowed) {
+      setPaywallOpen(true);
+      setByokEnabledState(false);
+      localStorage.setItem(BYOK_ENABLED_KEY, 'false');
+      return;
+    }
     setByokEnabledState(on);
     localStorage.setItem(BYOK_ENABLED_KEY, String(on));
-  }, []);
+  }, [byokAllowed]);
+
+  useEffect(() => {
+    if (!byokAllowed && byokEnabled) {
+      setByokEnabledState(false);
+      localStorage.setItem(BYOK_ENABLED_KEY, 'false');
+    }
+  }, [byokAllowed, byokEnabled]);
 
   // ── Bootstrapping ───────────────────────────────────────────────────────────
 
@@ -241,10 +272,12 @@ export const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
     setChatError(null);
 
     const service = serviceRef.current;
-    const effectiveTier: ChatTier = userId ? tier : 'instant';
-    const tierDef = CHAT_TIERS[effectiveTier];
-    const byok = byokEnabled && Object.keys(getByokKeys()).length > 0;
-    const cost = byok ? 0 : tierDef.credits;
+    const selectedIds = userId ? selectedModelIds : selectedModelIds.slice(0, 1);
+    let selectedMembers = CHAT_MODEL_OPTIONS.filter(model => selectedIds.includes(model.id));
+    if (!selectedMembers.length) selectedMembers = [CHAT_MODEL_OPTIONS[0]];
+    const effectiveTier = legacyTierForModelCount(selectedMembers.length);
+    const byok = byokAllowed && byokEnabled && Object.keys(getByokKeys()).length > 0;
+    const cost = byok || !userId ? 0 : selectedMembers.length;
 
     // 1. Affordability, before anything is sent or stored.
     if (cost > 0) {
@@ -319,11 +352,11 @@ export const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
       let finalMeta: ThinkingMetadata;
 
-      if (tierDef.nodes <= 1) {
+      if (selectedMembers.length === 1) {
         // ── Instant: one fast model, true multi-turn ──
-        let member = INSTANT_MEMBER;
+        let member = selectedMembers[0];
         if (byok) {
-          const picked = pickByokMember(INSTANT_MEMBER);
+          const picked = pickByokMember(member);
           if (!picked) throw new Error('Geen eigen sleutel beschikbaar. Voeg een sleutel toe in Node-configuratie.');
           member = picked;
         }
@@ -334,14 +367,24 @@ export const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
           chunk => appendChunk(draft.id, chunk),
           { byok }
         );
-        finalMeta = { creditsSpent: 0, byok, durationMs: Date.now() - startedAt };
+        finalMeta = {
+          creditsSpent: cost,
+          byok,
+          selectedModels: [member].map(model => ({
+            id: model.id,
+            name: model.name,
+            provider: String(model.provider),
+            modelId: model.modelId,
+          })),
+          durationMs: Date.now() - startedAt,
+        };
       } else {
         // ── Moderate+: node fan-out → (peer review) → aggregation ──
-        let council = chatDb.getActiveCouncil().slice(0, tierDef.nodes);
+        let council = selectedMembers;
         if (byok) {
           council = council.filter(m => byokKeyFor(m));
           if (!council.length) {
-            throw new Error('Geen nodes beschikbaar met eigen sleutels. Voeg sleutels toe in Node-configuratie.');
+            throw new Error('Geen geselecteerde modellen beschikbaar met eigen sleutels. Voeg sleutels toe in Node-configuratie.');
           }
         }
 
@@ -370,37 +413,7 @@ export const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
         }));
 
         if (!traces.length) {
-          throw new Error('Geen van de nodes kon antwoorden. Probeer het over een moment opnieuw.');
-        }
-
-        let reviews: PeerReview[] = [];
-        if (tierDef.peerReview) {
-          const byId = new Map(council.map(m => [m.id, m]));
-          const reviewResults = await Promise.all(traces.flatMap(target =>
-            council
-              .filter(reviewer => reviewer.id !== target.memberId)
-              .map(async reviewer => {
-                try {
-                  const critique = await service.generateWithPrompt(
-                    reviewer,
-                    SYSTEM_PROMPTS.PEER_REVIEWER(vraag, target.content, byId.get(target.memberId)?.name || 'Node'),
-                    'Analyze logical consistency.',
-                    { byok }
-                  );
-                  if (critique.startsWith('[')) return null;
-                  const scoreMatch = critique.match(/Score:\s*(\d+)/i);
-                  return {
-                    reviewerId: reviewer.id,
-                    targetId: target.memberId,
-                    content: critique,
-                    score: scoreMatch ? parseInt(scoreMatch[1], 10) : 5,
-                  } as PeerReview;
-                } catch {
-                  return null;
-                }
-              })
-          ));
-          reviews = reviewResults.filter((r): r is PeerReview => r !== null);
+          throw new Error('Geen van de geselecteerde modellen kon antwoorden. Probeer het over een moment opnieuw.');
         }
 
         let aggregator = SYNTH_AGGREGATOR;
@@ -410,12 +423,7 @@ export const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
           aggregator = picked;
         }
 
-        let context = traces.map((t, i) => `--- NODE ${i + 1} ---\n${t.content}`).join('\n\n');
-        if (reviews.length) {
-          context += '\n\n--- ONDERLINGE TOETSING ---\n' + reviews
-            .map(r => `[score ${r.score}/10] ${r.content.replace(/\n/g, ' ').slice(0, 400)}`)
-            .join('\n');
-        }
+        const context = traces.map((t, i) => `--- MODEL ${i + 1}: ${t.name} (${t.modelId}) ---\n${t.content}`).join('\n\n');
 
         await service.chatStream(
           aggregator,
@@ -428,8 +436,13 @@ export const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
         finalMeta = {
           creditsSpent: cost,
           byok,
+          selectedModels: council.map(model => ({
+            id: model.id,
+            name: model.name,
+            provider: String(model.provider),
+            modelId: model.modelId,
+          })),
           nodeTraces: traces,
-          reviews: reviews.length ? reviews : undefined,
           durationMs: Date.now() - startedAt,
         };
       }
@@ -465,7 +478,7 @@ export const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
       setIsStreaming(false);
       setPendingNodes(null);
     }
-  }, [messages, tier, userId, profile, byokEnabled, isStreaming, activeThreadId, appendChunk, finalizeDraft, refreshThreads, fetchProfile]);
+  }, [messages, selectedModelIds, userId, profile, byokAllowed, byokEnabled, isStreaming, activeThreadId, appendChunk, finalizeDraft, refreshThreads, fetchProfile]);
 
   return (
     <ChatContext.Provider
@@ -474,14 +487,16 @@ export const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
         projects,
         activeThreadId,
         messages,
-        tier,
-        setTier,
+        models: CHAT_MODEL_OPTIONS,
+        selectedModelIds,
+        setSelectedModelIds,
         isStreaming,
         pendingNodes,
         chatError,
         paywallOpen,
         setPaywallOpen,
         byokEnabled,
+        byokAllowed,
         setByokEnabled,
         sendMessage,
         newThread,

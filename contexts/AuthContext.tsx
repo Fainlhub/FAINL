@@ -4,6 +4,7 @@ import {
   useState,
   useEffect,
   useCallback,
+  useRef,
   FC,
   ReactNode,
 } from "react";
@@ -36,34 +37,77 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
   const [authSession, setAuthSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const profileRequests = useRef(new Map<string, Promise<void>>());
 
   const fetchProfile = useCallback(async (userId?: string) => {
     if (!userId) {
       setProfile(null);
       return;
     }
-    const { data, error } = await supabase
-      .from("user_profiles")
-      .select("*")
-      .eq("id", userId)
-      .single();
-    if (error) {
-      // If no profile exists yet, create one
-      if (error.code === "PGRST116") {
-        const { data: newProfile } = await supabase
+
+    const existingRequest = profileRequests.current.get(userId);
+    if (existingRequest) {
+      await existingRequest;
+      return;
+    }
+
+    const request = (async () => {
+      const selectProfile = () =>
+        supabase
           .from("user_profiles")
-          .insert({
+          .select("credits_remaining,total_turns_used,is_lifetime")
+          .eq("id", userId)
+          .maybeSingle();
+
+      const fallbackProfile: UserProfile = {
+        credits_remaining: 0,
+        total_turns_used: 0,
+        is_lifetime: false,
+      };
+
+      const { data, error } = await selectProfile();
+      if (error) {
+        console.error("Profiel ophalen mislukt:", error);
+        return;
+      }
+
+      if (data) {
+        setProfile(data);
+        return;
+      }
+
+      const { error: upsertError } = await supabase
+        .from("user_profiles")
+        .upsert(
+          {
             id: userId,
             credits_remaining: 0,
             total_turns_used: 0,
             is_lifetime: false,
-          })
-          .select()
-          .single();
-        if (newProfile) setProfile(newProfile);
+          },
+          { onConflict: "id", ignoreDuplicates: true }
+        );
+
+      if (upsertError) {
+        console.error("Profiel aanmaken mislukt:", upsertError);
+        return;
       }
-    } else if (data) {
-      setProfile(data);
+
+      const { data: ensuredProfile, error: ensureError } = await selectProfile();
+      if (ensureError) {
+        console.error("Aangemaakt profiel ophalen mislukt:", ensureError);
+        setProfile(fallbackProfile);
+        return;
+      }
+
+      setProfile(ensuredProfile ?? fallbackProfile);
+    })();
+
+    profileRequests.current.set(userId, request);
+    try {
+      await request;
+    } finally {
+      profileRequests.current.delete(userId);
     }
   }, []);
 
