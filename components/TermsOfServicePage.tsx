@@ -100,6 +100,17 @@ export const TermsOfServicePage: FC = () => {
           <p>Betaling dient plaats te vinden overeenkomstig de op de website of factuur vermelde betaaltermijn.</p>
           <p>Tenzij schriftelijk anders overeengekomen zijn betaalde bedragen niet restitueerbaar.</p>
           <p>Credits, indien van toepassing, zijn persoons- of accountgebonden, niet inwisselbaar voor geld en vervallen conform de op het platform vermelde voorwaarden.</p>
+
+          <h2>Artikel 10a — Refundbeleid en herroeping</h2>
+          <p>Voor credits en creditverbruik geldt het volgende refundbeleid:</p>
+          <ul>
+            <li>Een antwoord geldt als geleverd zodra ten minste één AI-node succesvol heeft geantwoord en een eindantwoord is samengesteld. Voor geleverde antwoorden vindt geen restitutie van credits plaats.</li>
+            <li>Indien vóór de start van een verwerking wordt vastgesteld dat de Dienst onbereikbaar is, worden geen credits afgeschreven.</li>
+            <li>Indien géén van de AI-nodes een antwoord heeft kunnen leveren, kan Gebruiker binnen 14 dagen contact opnemen via <a href="mailto:info@mnrv.nl">info@mnrv.nl</a>; FAINL crediteert in dat geval de afgeschreven credits op het account.</li>
+            <li>Ongebruikte credits zijn niet inwisselbaar voor geld, behoudens dwingend consumentenrecht.</li>
+          </ul>
+          <p>Consumenten hebben bij aankoop op afstand in beginsel een wettelijk herroepingsrecht van 14 dagen. Voor credits als digitale dienst geldt: door credits direct na aankoop beschikbaar te laten stellen en te gebruiken, stemt de consument uitdrukkelijk in met directe levering en doet daarmee afstand van het herroepingsrecht voor zover de dienst is geleverd. Voor het ongebruikte deel van een creditbundel kan de consument binnen 14 dagen na aankoop herroepen; terugbetaling vindt dan naar evenredigheid plaats.</p>
+          <p>Bij gebruik van eigen API-sleutels (BYOK) worden geen credits afgeschreven; kosten van de eigen AI-provider(s) vallen volledig buiten FAINL en komen voor rekening van Gebruiker.</p>
           <p>FAINL mag prijzen en prijsmodellen wijzigen. Wijzigingen in lopende consumentenabonnementen worden tijdig aangekondigd.</p>
           <p>Bij niet-tijdige betaling is Gebruiker van rechtswege in verzuim en is FAINL gerechtigd de toegang tot de Dienst geheel of gedeeltelijk op te schorten.</p>
 
