@@ -3,6 +3,7 @@ import { useState, useRef, useEffect, FC, lazy, Suspense } from 'react';
 import {
   AlertTriangle,
   CircleCheck,
+  Shield,
 } from "lucide-react";
 import {
   DEFAULT_COUNCIL,
@@ -56,6 +57,7 @@ const LandingPage = lazy(() => import("./components/LandingPage").then(m => ({ d
 import { useLanguage } from "./contexts/LanguageContext";
 import { AppShell } from "./components/layout/AppShell";
 import { ChatHome } from "./components/ChatHome";
+import { ChatView } from "./components/chat/ChatView";
 
 
 // Helper components (parseVerdictScores, ScoreBar, FeedbackWidget, WaitTimeIndicator,
@@ -257,14 +259,61 @@ const App: FC = () => {
       setAuthSession(session);
       fetchProfile(session?.user?.id);
       fetchInclusionStatus(session?.user?.id);
+      syncCloudHistory(session?.user?.id);
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setAuthSession(session);
       fetchProfile(session?.user?.id);
       fetchInclusionStatus(session?.user?.id);
+      syncCloudHistory(session?.user?.id);
     });
     return () => subscription.unsubscribe();
   }, []);
+
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+  // Cloud session history: one-time import of the legacy localStorage history,
+  // then the cloud becomes the source of truth for logged-in users.
+  const syncCloudHistory = async (userId?: string) => {
+    if (!userId) return;
+    try {
+      if (!localStorage.getItem('fainl_history_imported')) {
+        const saved = localStorage.getItem('fainl_history');
+        const legacy: SessionState[] = saved ? JSON.parse(saved) : [];
+        if (legacy.length) {
+          const rows = legacy.map(s => {
+            const id = UUID_RE.test(s.id) ? s.id : crypto.randomUUID();
+            return {
+              id,
+              user_id: userId,
+              query: s.query || '',
+              synthesis: s.synthesis || '',
+              data: { ...s, id },
+              is_archived: !!s.isArchived,
+              created_at: s.timestamp ? new Date(s.timestamp).toISOString() : new Date().toISOString(),
+            };
+          });
+          await supabase.from('council_sessions').upsert(rows, { onConflict: 'id' });
+        }
+        localStorage.setItem('fainl_history_imported', '1');
+      }
+
+      const { data, error } = await supabase
+        .from('council_sessions')
+        .select('id, data, is_archived, created_at')
+        .order('created_at', { ascending: false })
+        .limit(200);
+      if (!error && data) {
+        setHistory(data.map(r => ({
+          ...(r.data as SessionState),
+          id: r.id,
+          isArchived: r.is_archived,
+        })));
+      }
+    } catch (e) {
+      console.error('Cloud-sessiehistorie synchroniseren mislukt:', e);
+    }
+  };
 
   const fetchProfile = async (userId?: string) => {
     if (!userId) {
@@ -612,6 +661,16 @@ const App: FC = () => {
       setSession((prev: SessionState) => {
         const completedSession = { ...prev, synthesis, stage: WorkflowStage.COMPLETED, timestamp: Date.now() };
         setHistory((h: SessionState[]) => [completedSession, ...h]);
+        const uid = authSession?.user?.id;
+        if (uid) {
+          supabase.from('council_sessions').insert({
+            id: completedSession.id,
+            user_id: uid,
+            query: completedSession.query,
+            synthesis: completedSession.synthesis,
+            data: completedSession,
+          }).then(({ error }) => { if (error) console.error('Sessie cloud-opslag mislukt:', error); });
+        }
         return completedSession;
       });
       
@@ -691,23 +750,7 @@ const App: FC = () => {
   }, []);
 
   return (
-    <AppShell
-      history={history}
-      onLoadSession={(s) => { setSession(s); navigate('/mission'); }}
-      onNewChat={() => {
-        setSession({
-          id: crypto.randomUUID(),
-          stage: WorkflowStage.IDLE,
-          query: '',
-          councilResponses: [],
-          debateMessages: [],
-          reviews: [],
-          synthesis: '',
-        });
-        setInput('');
-        navigate('/');
-      }}
-    >
+    <AppShell>
 
       {isAnnouncementVisible && newsletterState !== 'success' && (
         <div className="w-full bg-[var(--action)] text-black px-4 py-4 relative border-b-4 border-black">
@@ -777,17 +820,9 @@ const App: FC = () => {
       <main className="flex-1 w-full flex flex-col">
         <Suspense fallback={<div className="flex items-center justify-center min-h-[40vh]"><div className="w-6 h-6 border-2 border-black/20 border-t-black dark:border-white/20 dark:border-t-white rounded-full animate-spin" /></div>}>
         <Routes>
-          {/* Home — Chat interface (navigates to /mission on submit) */}
-          <Route path="/" element={
-            <ChatHome
-              input={input}
-              onInputChange={setInput}
-              onSubmit={() => { navigate('/mission'); handleStart(); }}
-              isInputFocused={isInputFocused}
-              onFocus={() => setIsInputFocused(true)}
-              onBlur={() => setIsInputFocused(false)}
-            />
-          } />
+          {/* Home — multi-turn chat (nodes werken samen achter Thinking) */}
+          <Route path="/" element={<ChatView />} />
+          <Route path="/chat/:threadId" element={<ChatView />} />
 
           {/* Landing / Welcome page */}
           <Route path="/welcome" element={<LandingPage />} />
@@ -905,8 +940,20 @@ const App: FC = () => {
                 onUpdateConfig={(c) => setConfig(c)}
                 history={history}
                 onLoadSession={(s) => { setSession(s); navigate('/mission'); }}
-                onDeleteSessions={(ids) => setHistory(h => h.filter(s => !ids.includes(s.id)))}
-                onArchiveSessions={(ids) => setHistory(h => h.map(s => ids.includes(s.id) ? { ...s, isArchived: true } : s))}
+                onDeleteSessions={(ids) => {
+                  setHistory(h => h.filter(s => !ids.includes(s.id)));
+                  if (authSession?.user?.id) {
+                    supabase.from('council_sessions').delete().in('id', ids)
+                      .then(({ error }) => { if (error) console.error('Sessies cloud-verwijderen mislukt:', error); });
+                  }
+                }}
+                onArchiveSessions={(ids) => {
+                  setHistory(h => h.map(s => ids.includes(s.id) ? { ...s, isArchived: true } : s));
+                  if (authSession?.user?.id) {
+                    supabase.from('council_sessions').update({ is_archived: true }).in('id', ids)
+                      .then(({ error }) => { if (error) console.error('Sessies cloud-archiveren mislukt:', error); });
+                  }
+                }}
               />
             }
           />

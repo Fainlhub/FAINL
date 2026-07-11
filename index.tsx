@@ -4,7 +4,7 @@ import App from "./App";
 import "./index.css";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { AuthProvider } from "./contexts/AuthContext";
-import { SessionProvider } from "./contexts/SessionContext";
+import { ChatProvider } from "./contexts/ChatContext";
 
 import { BrowserRouter } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
@@ -21,9 +21,9 @@ root.render(
       <BrowserRouter>
         <LanguageProvider>
           <AuthProvider>
-            <SessionProvider>
+            <ChatProvider>
               <App />
-            </SessionProvider>
+            </ChatProvider>
           </AuthProvider>
         </LanguageProvider>
       </BrowserRouter>

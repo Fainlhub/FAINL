@@ -78,6 +78,60 @@ export interface SessionState {
   timestamp?: number;
 }
 
+// ─── Chat module ──────────────────────────────────────────────────────────────
+
+export type ChatTier = 'instant' | 'moderate' | 'complex' | 'max' | 'ultra';
+export type ChatRole = 'user' | 'assistant';
+
+export interface ChatTurn {
+  role: ChatRole;
+  content: string;
+}
+
+export interface ChatProject {
+  id: string;
+  name: string;
+  created_at: string;
+}
+
+export interface ChatThread {
+  id: string;
+  user_id: string;
+  project_id: string | null;
+  title: string;
+  pinned: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// One node's contribution inside the expandable Thinking block.
+export interface NodeTrace {
+  memberId: string;
+  name: string;
+  modelId: string;
+  content: string;
+}
+
+// chat_messages.metadata — can be 50-150KB for consensus turns, so list
+// queries must never select it.
+export interface ThinkingMetadata {
+  creditsSpent?: number;
+  byok?: boolean;
+  nodeTraces?: NodeTrace[];
+  reviews?: PeerReview[];
+  durationMs?: number;
+}
+
+export interface ChatMessage {
+  id: string;
+  thread_id: string;
+  role: ChatRole;
+  content: string;
+  tier: ChatTier;
+  metadata: ThinkingMetadata;
+  created_at: string;
+}
+
 export interface AppConfig {
   activeCouncil: CouncilMember[];
   customNodes: CouncilMember[];

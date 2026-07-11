@@ -1,6 +1,7 @@
-import { CouncilMember, CouncilResponse, PeerReview, ModelProvider, AppConfig, DebateMessage } from "../types";
+import { CouncilMember, CouncilResponse, PeerReview, ModelProvider, AppConfig, DebateMessage, ChatTurn } from "../types";
 import { SYSTEM_PROMPTS } from "../constants";
 import { parseCompartments } from "./parser";
+import { byokKeyFor, byokProviderFor, byokStream } from "./byokService";
 
 const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL || '') as string;
 const SUPABASE_ANON_KEY = (import.meta.env.VITE_SUPABASE_ANON_KEY || '') as string;
@@ -322,6 +323,106 @@ export class UnifiedCouncilService {
       onChunk?.(msg);
       return msg;
     }
+  }
+
+  // ─── Chat module transport ───────────────────────────────────────────────────
+
+  /**
+   * Multi-turn streaming for the chat module. Routes through the proxy with a
+   * messages[] body, or — when byok is set and the member's provider supports
+   * it — straight from the browser to the provider so the user's key never
+   * touches FAINL servers.
+   */
+  public async chatStream(
+    member: CouncilMember,
+    turns: ChatTurn[],
+    systemInstruction: string | undefined,
+    onChunk?: (chunk: string) => void,
+    opts?: { maxTokens?: number; byok?: boolean }
+  ): Promise<string> {
+    if (opts?.byok) {
+      const provider = byokProviderFor(member);
+      const key = byokKeyFor(member);
+      if (provider && key) {
+        return byokStream(provider, key, member.modelId, turns, systemInstruction, onChunk, opts?.maxTokens ?? 4096);
+      }
+      throw new Error(`Geen eigen sleutel beschikbaar voor ${member.provider}`);
+    }
+
+    const provider = PROVIDER_STRING[member.provider];
+    if (!provider) throw new Error(`Provider ${member.provider} not supported by proxy`);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60_000);
+    const res = await fetch(PROXY_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+      body: JSON.stringify({
+        provider,
+        modelId: member.modelId,
+        messages: turns,
+        systemInstruction,
+        stream: true,
+        ...(opts?.maxTokens ? { maxTokens: opts.maxTokens } : {}),
+      }),
+      signal: controller.signal,
+    });
+
+    if (!res.ok) {
+      clearTimeout(timeoutId);
+      const data = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+      throw new Error(data.error || `Proxy error ${res.status}`);
+    }
+    if (!res.body) { clearTimeout(timeoutId); throw new Error('No response body from proxy'); }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let fullText = '';
+    let buffer = '';
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() ?? '';
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const payload = line.slice(6).trim();
+          if (payload === '[DONE]') continue;
+          try {
+            const parsed = JSON.parse(payload);
+            const text = parsed.content || '';
+            if (text) { fullText += text; onChunk?.(text); }
+          } catch { /* partial JSON */ }
+        }
+      }
+    } finally {
+      clearTimeout(timeoutId);
+    }
+    return fullText;
+  }
+
+  /** Non-streaming single-shot with a custom system prompt (chat fan-out, titles). */
+  public async generateWithPrompt(
+    member: CouncilMember,
+    prompt: string,
+    systemInstruction?: string,
+    opts?: { byok?: boolean; maxTokens?: number }
+  ): Promise<string> {
+    if (opts?.byok) {
+      const provider = byokProviderFor(member);
+      const key = byokKeyFor(member);
+      if (provider && key) {
+        return byokStream(provider, key, member.modelId, [{ role: 'user', content: prompt }], systemInstruction, undefined, opts?.maxTokens ?? 4096);
+      }
+      throw new Error(`Geen eigen sleutel beschikbaar voor ${member.provider}`);
+    }
+    return this.generate(member, prompt, systemInstruction);
   }
 
   // ─── Public API ──────────────────────────────────────────────────────────────

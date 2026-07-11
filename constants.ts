@@ -1,5 +1,5 @@
 
-import { CouncilMember, ModelProvider } from "./types";
+import { ChatTier, CouncilMember, ModelProvider } from "./types";
 
 // --- ASSET MANAGEMENT ---
 export const UI_ASSETS = {
@@ -251,5 +251,76 @@ export const PRICING = {
 export const USAGE_LIMITS = {
   FREE_TURNS: 2,
   CREDITS_PER_TURN: 1
+};
+
+// ─── Chat module: tier ladder ─────────────────────────────────────────────────
+// Node selection per tier = the first N members of the active council, so the
+// order in Node-configuratie determines who participates at each tier.
+
+export const CHAT_TIERS: Record<ChatTier, {
+  label: string;
+  nodes: number;
+  credits: number;
+  peerReview: boolean;
+  omschrijving: string;
+}> = {
+  instant:  { label: 'Instant',  nodes: 1, credits: 0, peerReview: false, omschrijving: 'Direct antwoord van één snel model — gratis' },
+  moderate: { label: 'Moderate', nodes: 3, credits: 1, peerReview: false, omschrijving: '3 nodes werken samen aan één antwoord' },
+  complex:  { label: 'Complex',  nodes: 5, credits: 2, peerReview: false, omschrijving: '5 nodes werken samen aan één antwoord' },
+  max:      { label: 'Max',      nodes: 7, credits: 3, peerReview: false, omschrijving: 'Alle 7 nodes werken samen aan één antwoord' },
+  ultra:    { label: 'Ultra',    nodes: 7, credits: 5, peerReview: true,  omschrijving: '7 nodes toetsen elkaar onderling vóór het antwoord' },
+};
+
+export const CHAT_TIER_ORDER: ChatTier[] = ['instant', 'moderate', 'complex', 'max', 'ultra'];
+
+// The free Instant model. Conversational, no XML compartments, no persona
+// branding on the foreground.
+export const INSTANT_MEMBER: CouncilMember = {
+  id: 'chat-instant',
+  name: 'FAINL',
+  role: 'MEMBER',
+  provider: ModelProvider.GOOGLE,
+  modelId: 'gemini-2.0-flash',
+  avatar: UI_ASSETS.avatars.chairman,
+  color: 'bg-black',
+  description: 'Snel direct antwoord zonder multi-node samenwerking.',
+};
+
+// Internal aggregator that merges N node answers into the single visible chat
+// answer. Deliberately NOT Victor and NOT a persona: no score tags, no verdict
+// framing — those belong to the consensus module (/mission).
+export const SYNTH_AGGREGATOR: CouncilMember = {
+  id: 'chat-aggregator',
+  name: 'FAINL',
+  role: 'MEMBER',
+  provider: ModelProvider.ANTHROPIC,
+  modelId: 'claude-sonnet-4-20250514',
+  avatar: UI_ASSETS.avatars.chairman,
+  color: 'bg-black',
+  description: 'Voegt node-antwoorden samen tot één helder chatantwoord.',
+};
+
+export const CHAT_SYSTEM_PROMPTS = {
+  INSTANT: `Je bent FAINL, een behulpzame AI-assistent. Antwoord helder, direct en concreet in de taal van de gebruiker. Gebruik markdown waar dat de leesbaarheid helpt (kopjes, lijstjes, code blocks). Geen onnodige disclaimers, geen meta-praat over wie of wat je bent.`,
+
+  // Per-node analysis for chat turns: free-form reasoning, no XML compartments.
+  NODE_ANALYST: (vraag: string) => `Je bent één van meerdere AI-nodes die onafhankelijk dezelfde vraag analyseren. Jullie antwoorden worden daarna samengevoegd tot één eindantwoord.
+
+VRAAG: "${vraag}"
+
+Geef jouw beste, inhoudelijke antwoord met korte onderbouwing. Detecteer de taal van de vraag en antwoord in diezelfde taal. Wees concreet en direct — geen disclaimers, geen meta-praat. Maximaal ~300 woorden.`,
+
+  AGGREGATOR: (vraag: string, context: string) => `Meerdere AI-nodes hebben onafhankelijk dezelfde vraag beantwoord. Voeg hun antwoorden samen tot ÉÉN helder, direct eindantwoord.
+
+VRAAG: "${vraag}"
+
+NODE-ANTWOORDEN:
+${context}
+
+REGELS:
+- Detecteer de taal van de vraag en antwoord in diezelfde taal.
+- Geef het beste gecombineerde antwoord — geen opsomming van wat elke node zei, geen verwijzing naar "nodes" of "bronnen".
+- Zijn de nodes het oneens over iets wezenlijks, benoem dat dan kort en neutraal in het antwoord zelf ("Er zijn twee benaderingen...").
+- Gebruik markdown waar dat helpt. Wees concreet, geen vaagtaal.`,
 };
 

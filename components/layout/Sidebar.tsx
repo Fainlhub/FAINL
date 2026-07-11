@@ -1,5 +1,6 @@
-import { FC, useState, useMemo } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { FC, useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../../services/supabaseClient';
 import {
   Plus,
   Search,
@@ -9,13 +10,29 @@ import {
   LogOut,
   MoreHorizontal,
   ChevronLeft,
+  ChevronRight,
   BookOpen,
   HelpCircle,
   CreditCard,
   Mail,
   LayoutDashboard,
   Heart,
+  Pin,
+  PinOff,
+  Pencil,
+  Trash2,
+  FolderPlus,
+  Folder,
+  FolderInput,
+  Settings2,
+  Palette,
+  Puzzle,
 } from 'lucide-react';
+import { useChat } from '../../contexts/ChatContext';
+import { ChatThread } from '../../types';
+import { NodeConfigPanel } from '../chat/NodeConfigPanel';
+import { DesignsPanel } from '../chat/DesignsPanel';
+import { ThemePref } from './theme';
 
 interface SidebarProps {
   collapsed: boolean;
@@ -23,42 +40,35 @@ interface SidebarProps {
   onToggle: () => void;
   darkMode: boolean;
   onToggleTheme: () => void;
-  history: { id: string; query: string; timestamp?: number }[];
-  onLoadSession: (s: any) => void;
-  onNewChat: () => void;
+  themePref: ThemePref;
+  onThemePrefChange: (pref: ThemePref) => void;
   userEmail?: string;
   userName?: string;
   isLoggedIn: boolean;
   onLogout: () => void;
+  onNavigate?: () => void;
 }
 
-const groupByDate = (items: { id: string; query: string; timestamp?: number }[]) => {
+const groupByDate = (items: ChatThread[]) => {
   const now = Date.now();
   const day = 86400000;
-  const groups: { label: string; items: typeof items }[] = [];
-  const today: typeof items = [];
-  const yesterday: typeof items = [];
-  const week: typeof items = [];
-  const month: typeof items = [];
-  const older: typeof items = [];
-
+  const buckets: Record<string, ChatThread[]> = {
+    Vandaag: [], Gisteren: [], 'Deze week': [], 'Deze maand': [], Ouder: [],
+  };
   for (const item of items) {
-    const age = now - (item.timestamp || 0);
-    if (!item.timestamp) older.push(item);
-    else if (age < day) today.push(item);
-    else if (age < 2 * day) yesterday.push(item);
-    else if (age < 7 * day) week.push(item);
-    else if (age < 30 * day) month.push(item);
-    else older.push(item);
+    const age = now - new Date(item.updated_at).getTime();
+    if (age < day) buckets.Vandaag.push(item);
+    else if (age < 2 * day) buckets.Gisteren.push(item);
+    else if (age < 7 * day) buckets['Deze week'].push(item);
+    else if (age < 30 * day) buckets['Deze maand'].push(item);
+    else buckets.Ouder.push(item);
   }
-
-  if (today.length) groups.push({ label: 'Vandaag', items: today });
-  if (yesterday.length) groups.push({ label: 'Gisteren', items: yesterday });
-  if (week.length) groups.push({ label: 'Deze week', items: week });
-  if (month.length) groups.push({ label: 'Deze maand', items: month });
-  if (older.length) groups.push({ label: 'Ouder', items: older });
-  return groups;
+  return Object.entries(buckets)
+    .filter(([, v]) => v.length)
+    .map(([label, v]) => ({ label, items: v }));
 };
+
+type PanelName = 'nodes' | 'designs' | 'plugins' | null;
 
 export const Sidebar: FC<SidebarProps> = ({
   collapsed,
@@ -66,26 +76,157 @@ export const Sidebar: FC<SidebarProps> = ({
   onToggle,
   darkMode,
   onToggleTheme,
-  history,
-  onLoadSession,
-  onNewChat,
+  themePref,
+  onThemePrefChange,
   userEmail,
   userName,
   isLoggedIn,
   onLogout,
+  onNavigate,
 }) => {
   const navigate = useNavigate();
-  const location = useLocation();
+  const {
+    threads,
+    projects,
+    activeThreadId,
+    newThread,
+    openThread,
+    renameThread,
+    pinThread,
+    removeThread,
+    moveThreadToProject,
+    addProject,
+  } = useChat();
+
   const [flyoutOpen, setFlyoutOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const [menuThreadId, setMenuThreadId] = useState<string | null>(null);
+  const [moveMenuId, setMoveMenuId] = useState<string | null>(null);
+  const [openProjects, setOpenProjects] = useState<Set<string>>(new Set());
+  const [panel, setPanel] = useState<PanelName>(null);
+
+  // Content matches from the search_threads RPC (title matching stays instant
+  // and client-side; the RPC also finds hits inside old answers).
+  const [contentHits, setContentHits] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    const q = search.trim();
+    if (!isLoggedIn || q.length < 2) {
+      setContentHits(new Set());
+      return;
+    }
+    const timer = setTimeout(async () => {
+      const { data } = await supabase.rpc('search_threads', { p_query: q });
+      setContentHits(new Set((data ?? []).map((r: { thread_id: string }) => r.thread_id)));
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search, isLoggedIn]);
 
   const filtered = useMemo(() => {
-    if (!search.trim()) return history;
+    if (!search.trim()) return threads;
     const q = search.toLowerCase();
-    return history.filter(s => s.query.toLowerCase().includes(q));
-  }, [history, search]);
+    return threads.filter(t => t.title.toLowerCase().includes(q) || contentHits.has(t.id));
+  }, [threads, search, contentHits]);
 
-  const groups = useMemo(() => groupByDate(filtered), [filtered]);
+  const pinned = useMemo(() => filtered.filter(t => t.pinned), [filtered]);
+  const byProject = useMemo(() => {
+    const map = new Map<string, ChatThread[]>();
+    for (const t of filtered) {
+      if (t.pinned || !t.project_id) continue;
+      map.set(t.project_id, [...(map.get(t.project_id) ?? []), t]);
+    }
+    return map;
+  }, [filtered]);
+  const ungrouped = useMemo(
+    () => filtered.filter(t => !t.pinned && !t.project_id),
+    [filtered]
+  );
+  const groups = useMemo(() => groupByDate(ungrouped), [ungrouped]);
+
+  const go = (fn: () => void) => { fn(); onNavigate?.(); };
+
+  const handleOpenThread = (id: string) => go(() => { openThread(id); navigate('/'); });
+
+  const handleRename = (thread: ChatThread) => {
+    const title = window.prompt('Nieuwe naam voor dit gesprek:', thread.title);
+    if (title?.trim()) renameThread(thread.id, title.trim());
+    setMenuThreadId(null);
+  };
+
+  const handleDelete = (thread: ChatThread) => {
+    if (window.confirm(`"${thread.title}" definitief verwijderen?`)) removeThread(thread.id);
+    setMenuThreadId(null);
+  };
+
+  const handleNewProject = () => {
+    const name = window.prompt('Naam van het nieuwe project:');
+    if (name?.trim()) addProject(name.trim());
+  };
+
+  const toggleProject = (id: string) => {
+    setOpenProjects(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const ThreadRow: FC<{ thread: ChatThread }> = ({ thread }) => (
+    <div className={`sidebar-thread-row${thread.id === activeThreadId ? ' active' : ''}`}>
+      <button
+        className="sidebar-history-item"
+        onClick={() => handleOpenThread(thread.id)}
+        title={thread.title}
+      >
+        <MessageSquare />
+        <span className="sidebar-history-label">{thread.title || 'Naamloos'}</span>
+      </button>
+      <button
+        className="sidebar-thread-menu-btn"
+        onClick={() => { setMenuThreadId(id => (id === thread.id ? null : thread.id)); setMoveMenuId(null); }}
+        aria-label="Opties voor dit gesprek"
+      >
+        <MoreHorizontal />
+      </button>
+      {menuThreadId === thread.id && (
+        <>
+          <div className="flyout-backdrop" onClick={() => { setMenuThreadId(null); setMoveMenuId(null); }} />
+          <div className="thread-menu">
+            <button className="flyout-item" onClick={() => { pinThread(thread.id, !thread.pinned); setMenuThreadId(null); }}>
+              {thread.pinned ? <PinOff className="flyout-icon" /> : <Pin className="flyout-icon" />}
+              {thread.pinned ? 'Losmaken' : 'Vastzetten'}
+            </button>
+            <button className="flyout-item" onClick={() => handleRename(thread)}>
+              <Pencil className="flyout-icon" /> Naam wijzigen
+            </button>
+            {projects.length > 0 && (
+              <button className="flyout-item" onClick={() => setMoveMenuId(id => (id === thread.id ? null : thread.id))}>
+                <FolderInput className="flyout-icon" /> Verplaatsen…
+              </button>
+            )}
+            {moveMenuId === thread.id && (
+              <div className="thread-menu-submenu">
+                {thread.project_id && (
+                  <button className="flyout-item" onClick={() => { moveThreadToProject(thread.id, null); setMenuThreadId(null); setMoveMenuId(null); }}>
+                    Uit project halen
+                  </button>
+                )}
+                {projects.filter(p => p.id !== thread.project_id).map(p => (
+                  <button key={p.id} className="flyout-item" onClick={() => { moveThreadToProject(thread.id, p.id); setMenuThreadId(null); setMoveMenuId(null); }}>
+                    <Folder className="flyout-icon" /> {p.name}
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="flyout-divider" />
+            <button className="flyout-item flyout-item--danger" onClick={() => handleDelete(thread)}>
+              <Trash2 className="flyout-icon" /> Verwijderen
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
 
   return (
     <aside className={`sidebar${collapsed ? ' collapsed' : ''}${mobileOpen ? ' mobile-open' : ''}`}>
@@ -99,7 +240,7 @@ export const Sidebar: FC<SidebarProps> = ({
       </button>
 
       {/* Logo */}
-      <button className="sidebar-logo" onClick={() => navigate('/')} aria-label="FAINL — naar startpagina">
+      <button className="sidebar-logo" onClick={() => go(() => navigate('/'))} aria-label="FAINL — naar startpagina">
         <video
           src="/FAINLANI.mp4"
           autoPlay muted loop playsInline
@@ -108,7 +249,7 @@ export const Sidebar: FC<SidebarProps> = ({
       </button>
 
       {/* New chat */}
-      <button className="btn-new-chat" onClick={onNewChat}>
+      <button className="btn-new-chat" onClick={() => go(() => { newThread(); navigate('/'); })}>
         <Plus />
         <span>Nieuwe chat</span>
       </button>
@@ -125,35 +266,88 @@ export const Sidebar: FC<SidebarProps> = ({
         />
       </div>
 
-      {/* Chat history — grouped by date */}
       <nav className="sidebar-nav">
-        {groups.length === 0 && history.length > 0 && search && (
-          <p className="sidebar-empty">Geen resultaten</p>
+        {!isLoggedIn && (
+          <p className="sidebar-empty">
+            <a href="/login?next=/" className="sidebar-login-link">Log in</a> om chats te bewaren
+          </p>
         )}
-        {groups.length === 0 && history.length === 0 && (
-          <p className="sidebar-empty">Nog geen chats</p>
-        )}
-        {groups.map(group => (
-          <div key={group.label} className="sidebar-section">
-            <p className="sidebar-section-label">{group.label}</p>
-            {group.items.map(s => (
-              <button
-                key={s.id}
-                className="sidebar-history-item"
-                onClick={() => onLoadSession(s)}
-                title={s.query}
-              >
-                <MessageSquare />
-                <span className="sidebar-history-label">{s.query || 'Naamloos'}</span>
-              </button>
+
+        {isLoggedIn && (
+          <>
+            {/* Pinned */}
+            {pinned.length > 0 && (
+              <div className="sidebar-section">
+                <p className="sidebar-section-label">Vastgezet</p>
+                {pinned.map(t => <ThreadRow key={t.id} thread={t} />)}
+              </div>
+            )}
+
+            {/* Projects */}
+            <div className="sidebar-section">
+              <div className="sidebar-section-head">
+                <p className="sidebar-section-label">Projecten</p>
+                <button className="sidebar-mini-btn" onClick={handleNewProject} title="Nieuw project" aria-label="Nieuw project">
+                  <FolderPlus />
+                </button>
+              </div>
+              {projects.map(p => {
+                const items = byProject.get(p.id) ?? [];
+                const open = openProjects.has(p.id);
+                return (
+                  <div key={p.id} className="sidebar-project">
+                    <button className="sidebar-history-item" onClick={() => toggleProject(p.id)}>
+                      {open ? <ChevronLeft className="rotate-[-90deg]" /> : <ChevronRight />}
+                      <Folder />
+                      <span className="sidebar-history-label">{p.name}</span>
+                      <span className="sidebar-count">{items.length}</span>
+                    </button>
+                    {open && items.map(t => <ThreadRow key={t.id} thread={t} />)}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* History by date */}
+            {groups.length === 0 && threads.length > 0 && search && (
+              <p className="sidebar-empty">Geen resultaten</p>
+            )}
+            {threads.length === 0 && (
+              <p className="sidebar-empty">Nog geen chats</p>
+            )}
+            {groups.map(group => (
+              <div key={group.label} className="sidebar-section">
+                <p className="sidebar-section-label">{group.label}</p>
+                {group.items.map(t => <ThreadRow key={t.id} thread={t} />)}
+              </div>
             ))}
-          </div>
-        ))}
+          </>
+        )}
       </nav>
 
       {/* Footer */}
       <div className="sidebar-footer">
-        {/* Theme toggle */}
+        <button className="flyout-btn flyout-btn--spread" onClick={() => setPanel('nodes')}>
+          <span className="flyout-btn__icon-label">
+            <Settings2 className="flyout-icon" />
+            <span>Node-configuratie</span>
+          </span>
+        </button>
+        <button className="flyout-btn flyout-btn--spread" onClick={() => setPanel('designs')}>
+          <span className="flyout-btn__icon-label">
+            <Palette className="flyout-icon" />
+            <span>Designs</span>
+          </span>
+        </button>
+        <button className="flyout-btn flyout-btn--spread" onClick={() => setPanel('plugins')}>
+          <span className="flyout-btn__icon-label">
+            <Puzzle className="flyout-icon" />
+            <span>Plug-ins</span>
+            <span className="sidebar-badge">Binnenkort</span>
+          </span>
+        </button>
+
+        {/* Theme quick toggle */}
         <div className="sidebar-tooltip-wrap">
           <button className="flyout-btn flyout-btn--spread" onClick={onToggleTheme}>
             <span className="flyout-btn__icon-label">
@@ -180,23 +374,23 @@ export const Sidebar: FC<SidebarProps> = ({
             <>
               <div className="flyout-backdrop" onClick={() => setFlyoutOpen(false)} />
               <div className="flyout-menu">
-                <button className="flyout-item" onClick={() => { setFlyoutOpen(false); navigate('/tokens'); }}>
+                <button className="flyout-item" onClick={() => { setFlyoutOpen(false); go(() => navigate('/tokens')); }}>
                   <CreditCard className="flyout-icon" /> Prijzen
                 </button>
-                <button className="flyout-item" onClick={() => { setFlyoutOpen(false); navigate('/dashboard'); }}>
+                <button className="flyout-item" onClick={() => { setFlyoutOpen(false); go(() => navigate('/dashboard')); }}>
                   <LayoutDashboard className="flyout-icon" /> Mijn FAINL's
                 </button>
-                <button className="flyout-item" onClick={() => { setFlyoutOpen(false); navigate('/cookbook'); }}>
+                <button className="flyout-item" onClick={() => { setFlyoutOpen(false); go(() => navigate('/cookbook')); }}>
                   <BookOpen className="flyout-icon" /> Voorbeeldvragen
                 </button>
                 <div className="flyout-divider" />
-                <button className="flyout-item" onClick={() => { setFlyoutOpen(false); navigate('/faq'); }}>
+                <button className="flyout-item" onClick={() => { setFlyoutOpen(false); go(() => navigate('/faq')); }}>
                   <HelpCircle className="flyout-icon" /> FAQ
                 </button>
-                <button className="flyout-item" onClick={() => { setFlyoutOpen(false); navigate('/contact'); }}>
+                <button className="flyout-item" onClick={() => { setFlyoutOpen(false); go(() => navigate('/contact')); }}>
                   <Mail className="flyout-icon" /> Contact
                 </button>
-                <button className="flyout-item" onClick={() => { setFlyoutOpen(false); navigate('/inclusie'); }}>
+                <button className="flyout-item" onClick={() => { setFlyoutOpen(false); go(() => navigate('/inclusie')); }}>
                   <Heart className="flyout-icon" /> Inclusieprogramma
                 </button>
                 {isLoggedIn && (
@@ -212,6 +406,25 @@ export const Sidebar: FC<SidebarProps> = ({
           )}
         </div>
       </div>
+
+      {/* Panels */}
+      {panel === 'nodes' && <NodeConfigPanel onClose={() => setPanel(null)} />}
+      {panel === 'designs' && (
+        <DesignsPanel
+          themePref={themePref}
+          onThemePrefChange={onThemePrefChange}
+          onClose={() => setPanel(null)}
+        />
+      )}
+      {panel === 'plugins' && (
+        <div className="panel-backdrop" onClick={() => setPanel(null)}>
+          <div className="panel-card" onClick={e => e.stopPropagation()}>
+            <h2 className="panel-title">Plug-ins</h2>
+            <p className="panel-text">Plug-ins komen binnenkort. Hiermee koppel je straks externe tools en databronnen aan je chats.</p>
+            <button className="btn-send" onClick={() => setPanel(null)}>Sluiten</button>
+          </div>
+        </div>
+      )}
     </aside>
   );
 };

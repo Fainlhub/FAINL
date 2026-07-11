@@ -35,16 +35,72 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
+interface ChatTurn {
+  role: 'user' | 'assistant'
+  content: string
+}
+
 interface ProxyRequest {
   provider: string
   modelId: string
-  prompt: string
+  prompt?: string          // legacy single-turn path (kept: /mission depends on it)
+  messages?: ChatTurn[]    // multi-turn chat path
   systemInstruction?: string
   stream?: boolean
   baseUrl?: string
   temperature?: number
   maxTokens?: number
   // TTS-specific (provider='tts'): modelId=voiceName, prompt=text, temperature=speakingRate
+}
+
+// Normalize both request shapes into one message array. Anthropic and Gemini
+// require the conversation to start with a user turn, so leading assistant
+// messages are dropped defensively.
+function toTurns(body: ProxyRequest): ChatTurn[] {
+  let turns: ChatTurn[] = body.messages?.length
+    ? body.messages.filter(m => (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string' && m.content.length > 0)
+    : [{ role: 'user', content: body.prompt ?? '' }]
+  while (turns.length && turns[0].role !== 'user') turns = turns.slice(1)
+  return turns
+}
+
+// ─── Unauthenticated rate limiting ───────────────────────────────────────────
+// verify_jwt is false (browser CORS), so requests carrying only the anon key
+// are open to the world. Per-isolate sliding window on client IP: imperfect but
+// removes drive-by abuse of the free tier. Escalation path: Cloudflare/Turnstile.
+
+const RATE_LIMIT_MAX = 30
+const RATE_LIMIT_WINDOW_MS = 5 * 60 * 1000
+const UNAUTH_MAX_TOKENS = 2048
+const _hits = new Map<string, number[]>()
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now()
+  const hits = (_hits.get(ip) ?? []).filter(t => now - t < RATE_LIMIT_WINDOW_MS)
+  hits.push(now)
+  _hits.set(ip, hits)
+  if (_hits.size > 10_000) {
+    for (const [key, value] of _hits) {
+      if (!value.some(t => now - t < RATE_LIMIT_WINDOW_MS)) _hits.delete(key)
+    }
+  }
+  return hits.length > RATE_LIMIT_MAX
+}
+
+// A real user session sends a JWT (three dot-separated segments with a sub
+// claim) instead of the shared anon/publishable key. Signature verification is
+// unnecessary here: this only relaxes rate limits, grants no data access.
+function hasUserJwt(req: Request): boolean {
+  const auth = req.headers.get('authorization') ?? ''
+  const token = auth.replace(/^Bearer\s+/i, '')
+  const parts = token.split('.')
+  if (parts.length !== 3) return false
+  try {
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')))
+    return typeof payload.sub === 'string' && payload.role !== 'anon'
+  } catch {
+    return false
+  }
 }
 
 // ─── Service Account JWT helpers ─────────────────────────────────────────────
@@ -171,36 +227,47 @@ serve(async (req: Request) => {
       stream = false,
       baseUrl,
       temperature = 0.7,
-      maxTokens = 8192,
     } = body
+    let maxTokens = body.maxTokens ?? 8192
 
-    if (!provider || !prompt) {
-      return errRes('Missing required fields: provider, prompt', 400)
+    if (!provider || (!prompt && !body.messages?.length)) {
+      return errRes('Missing required fields: provider, prompt or messages', 400)
+    }
+
+    if (!hasUserJwt(req)) {
+      const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+      if (isRateLimited(ip)) {
+        return errRes('Te veel verzoeken. Probeer het over een paar minuten opnieuw.', 429)
+      }
+      maxTokens = Math.min(maxTokens, UNAUTH_MAX_TOKENS)
     }
 
     // ── Google Chirp 3 HD Text-to-Speech ───────────────────────────────────
     if (provider === 'tts') {
-      return googleChirpTTS(prompt, modelId || 'nl-NL-Chirp3-HD-Charon', temperature ?? 1.1)
+      return googleChirpTTS(prompt ?? '', modelId || 'nl-NL-Chirp3-HD-Charon', temperature ?? 1.1)
     }
 
     if (!modelId) return errRes('Missing required field: modelId', 400)
 
+    const turns = toTurns(body)
+    if (!turns.length) return errRes('No user message provided', 400)
+
     if (provider === 'google') {
       return stream
-        ? googleStream(modelId, prompt, systemInstruction, temperature, maxTokens)
-        : google(modelId, prompt, systemInstruction, temperature, maxTokens)
+        ? googleStream(modelId, turns, systemInstruction, temperature, maxTokens)
+        : google(modelId, turns, systemInstruction, temperature, maxTokens)
     }
 
     if (provider === 'anthropic') {
       return stream
-        ? anthropicStream(modelId, prompt, systemInstruction, temperature, maxTokens)
-        : anthropic(modelId, prompt, systemInstruction, temperature, maxTokens)
+        ? anthropicStream(modelId, turns, systemInstruction, temperature, maxTokens)
+        : anthropic(modelId, turns, systemInstruction, temperature, maxTokens)
     }
 
     // OpenAI-compatible providers
     return stream
-      ? genericStream(provider, modelId, prompt, systemInstruction, temperature, maxTokens, baseUrl)
-      : generic(provider, modelId, prompt, systemInstruction, temperature, maxTokens, baseUrl)
+      ? genericStream(provider, modelId, turns, systemInstruction, temperature, maxTokens, baseUrl)
+      : generic(provider, modelId, turns, systemInstruction, temperature, maxTokens, baseUrl)
 
   } catch (error: any) {
     return errRes(error?.message ?? 'Unknown error', 500)
@@ -209,8 +276,15 @@ serve(async (req: Request) => {
 
 // ─── Google Gemini ────────────────────────────────────────────────────────────
 
+function toGeminiContents(turns: ChatTurn[]) {
+  return turns.map(t => ({
+    role: t.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: t.content }],
+  }))
+}
+
 async function google(
-  modelId: string, prompt: string, systemInstruction?: string,
+  modelId: string, turns: ChatTurn[], systemInstruction?: string,
   temperature = 0.7, maxTokens = 2048
 ): Promise<Response> {
   const apiKey = SECRETS.google
@@ -218,7 +292,7 @@ async function google(
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${apiKey}`
   const body: any = {
-    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    contents: toGeminiContents(turns),
     generationConfig: { temperature, maxOutputTokens: maxTokens },
   }
   if (systemInstruction) body.systemInstruction = { parts: [{ text: systemInstruction }] }
@@ -234,7 +308,7 @@ async function google(
 }
 
 async function googleStream(
-  modelId: string, prompt: string, systemInstruction?: string,
+  modelId: string, turns: ChatTurn[], systemInstruction?: string,
   temperature = 0.7, maxTokens = 2048
 ): Promise<Response> {
   const apiKey = SECRETS.google
@@ -242,7 +316,7 @@ async function googleStream(
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:streamGenerateContent?key=${apiKey}&alt=sse`
   const body: any = {
-    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    contents: toGeminiContents(turns),
     generationConfig: { temperature, maxOutputTokens: maxTokens },
   }
   if (systemInstruction) body.systemInstruction = { parts: [{ text: systemInstruction }] }
@@ -265,7 +339,7 @@ async function googleStream(
 // ─── Anthropic ────────────────────────────────────────────────────────────────
 
 async function anthropic(
-  modelId: string, prompt: string, systemInstruction?: string,
+  modelId: string, turns: ChatTurn[], systemInstruction?: string,
   temperature = 0.7, maxTokens = 2048
 ): Promise<Response> {
   const apiKey = SECRETS.anthropic
@@ -274,7 +348,7 @@ async function anthropic(
   const body: any = {
     model: modelId,
     max_tokens: maxTokens,
-    messages: [{ role: 'user', content: prompt }],
+    messages: turns,
     temperature,
   }
   if (systemInstruction) body.system = systemInstruction
@@ -294,7 +368,7 @@ async function anthropic(
 }
 
 async function anthropicStream(
-  modelId: string, prompt: string, systemInstruction?: string,
+  modelId: string, turns: ChatTurn[], systemInstruction?: string,
   temperature = 0.7, maxTokens = 2048
 ): Promise<Response> {
   const apiKey = SECRETS.anthropic
@@ -303,7 +377,7 @@ async function anthropicStream(
   const body: any = {
     model: modelId,
     max_tokens: maxTokens,
-    messages: [{ role: 'user', content: prompt }],
+    messages: turns,
     temperature,
     stream: true,
   }
@@ -331,7 +405,7 @@ async function anthropicStream(
 // ─── OpenAI-compatible ────────────────────────────────────────────────────────
 
 async function generic(
-  provider: string, modelId: string, prompt: string, systemInstruction?: string,
+  provider: string, modelId: string, turns: ChatTurn[], systemInstruction?: string,
   temperature = 0.7, maxTokens = 2048, customBaseUrl?: string
 ): Promise<Response> {
   const apiKey = SECRETS[provider]
@@ -341,7 +415,7 @@ async function generic(
 
   const messages: any[] = []
   if (systemInstruction) messages.push({ role: 'system', content: systemInstruction })
-  messages.push({ role: 'user', content: prompt })
+  messages.push(...turns)
 
   const res = await fetch(`${baseUrl}/chat/completions`, {
     method: 'POST',
@@ -354,7 +428,7 @@ async function generic(
 }
 
 async function genericStream(
-  provider: string, modelId: string, prompt: string, systemInstruction?: string,
+  provider: string, modelId: string, turns: ChatTurn[], systemInstruction?: string,
   temperature = 0.7, maxTokens = 2048, customBaseUrl?: string
 ): Promise<Response> {
   const apiKey = SECRETS[provider]
@@ -364,7 +438,7 @@ async function genericStream(
 
   const messages: any[] = []
   if (systemInstruction) messages.push({ role: 'system', content: systemInstruction })
-  messages.push({ role: 'user', content: prompt })
+  messages.push(...turns)
 
   const upstream = await fetch(`${baseUrl}/chat/completions`, {
     method: 'POST',

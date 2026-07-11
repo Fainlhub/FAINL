@@ -1,24 +1,16 @@
 import { FC, ReactNode, useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 import { BottomNav } from './BottomNav';
 import { useAuth } from '../../contexts/AuthContext';
+import { ThemePref, getStoredThemePref, storeThemePref, resolveDark } from './theme';
 
 interface AppShellProps {
   children: ReactNode;
-  history: { id: string; query: string; timestamp?: number }[];
-  onLoadSession: (s: any) => void;
-  onNewChat: () => void;
 }
 
-export const AppShell: FC<AppShellProps> = ({
-  children,
-  history,
-  onLoadSession,
-  onNewChat,
-}) => {
-  const navigate = useNavigate();
+export const AppShell: FC<AppShellProps> = ({ children }) => {
   const location = useLocation();
   const { authSession, handleLogout } = useAuth();
 
@@ -27,15 +19,22 @@ export const AppShell: FC<AppShellProps> = ({
   );
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const [darkMode, setDarkMode] = useState(() => {
-    const stored = localStorage.getItem('fainl_theme');
-    if (stored) return stored === 'dark';
-    return typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  });
+  const [themePref, setThemePref] = useState<ThemePref>(getStoredThemePref);
+  const [darkMode, setDarkMode] = useState(() => resolveDark(getStoredThemePref()));
+
+  useEffect(() => {
+    storeThemePref(themePref);
+    setDarkMode(resolveDark(themePref));
+    if (themePref !== 'system') return;
+    // Follow the OS while the preference is 'system'.
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const onChange = () => setDarkMode(mq.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, [themePref]);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', darkMode);
-    localStorage.setItem('fainl_theme', darkMode ? 'dark' : 'light');
   }, [darkMode]);
 
   useEffect(() => {
@@ -77,14 +76,14 @@ export const AppShell: FC<AppShellProps> = ({
         mobileOpen={mobileMenuOpen}
         onToggle={toggleSidebar}
         darkMode={darkMode}
-        onToggleTheme={() => setDarkMode(d => !d)}
-        history={history}
-        onLoadSession={(s) => { onLoadSession(s); navigate('/mission'); setMobileMenuOpen(false); }}
-        onNewChat={() => { onNewChat(); setMobileMenuOpen(false); }}
+        onToggleTheme={() => setThemePref(darkMode ? 'light' : 'dark')}
+        themePref={themePref}
+        onThemePrefChange={setThemePref}
         userEmail={userEmail}
         userName={userName}
         isLoggedIn={!!authSession}
         onLogout={handleLogout}
+        onNavigate={() => setMobileMenuOpen(false)}
       />
 
       <div className={`main-canvas${sidebarCollapsed ? ' sidebar-collapsed' : ''}`}>
