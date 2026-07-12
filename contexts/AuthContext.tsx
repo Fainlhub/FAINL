@@ -12,12 +12,17 @@ import { Session } from "@supabase/supabase-js";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../services/supabaseClient";
 
+const WEEKLY_FREE_CREDITS = 10;
+
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 export interface UserProfile {
   credits_remaining: number;
   total_turns_used: number;
   is_lifetime: boolean;
+  ad_free_lifetime?: boolean;
+  subscription_status?: string | null;
+  subscription_plan?: string | null;
 }
 
 interface AuthContextValue {
@@ -55,7 +60,7 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
       const selectProfile = () =>
         supabase
           .from("user_profiles")
-          .select("credits_remaining,total_turns_used,is_lifetime")
+          .select("credits_remaining,total_turns_used,is_lifetime,ad_free_lifetime,subscription_status,subscription_plan")
           .eq("id", userId)
           .maybeSingle();
 
@@ -63,6 +68,44 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
         credits_remaining: 0,
         total_turns_used: 0,
         is_lifetime: false,
+        ad_free_lifetime: false,
+        subscription_status: null,
+        subscription_plan: null,
+      };
+
+      const applyWeeklyCredits = async (
+        profileToUse: UserProfile | null
+      ): Promise<boolean> => {
+        const { data: weeklyGrant, error: weeklyGrantError } =
+          await supabase.rpc("claim_weekly_credits", {
+            p_user_id: userId,
+            p_amount: WEEKLY_FREE_CREDITS,
+          });
+
+        if (weeklyGrantError) {
+          console.error("Wekelijkse credits claimen mislukt:", weeklyGrantError);
+          if (profileToUse) {
+            setProfile(profileToUse);
+          }
+          return false;
+        }
+
+        if (weeklyGrant?.success) {
+          setProfile({
+            credits_remaining: weeklyGrant.credits_remaining,
+            total_turns_used: weeklyGrant.total_turns_used,
+            is_lifetime: weeklyGrant.is_lifetime,
+            ad_free_lifetime: profileToUse?.ad_free_lifetime,
+            subscription_status: profileToUse?.subscription_status,
+            subscription_plan: profileToUse?.subscription_plan,
+          });
+          return true;
+        }
+
+        if (profileToUse) {
+          setProfile(profileToUse);
+        }
+        return false;
       };
 
       const { data, error } = await selectProfile();
@@ -72,7 +115,7 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
       }
 
       if (data) {
-        setProfile(data);
+        await applyWeeklyCredits(data);
         return;
       }
 
@@ -97,6 +140,10 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
       if (ensureError) {
         console.error("Aangemaakt profiel ophalen mislukt:", ensureError);
         setProfile(fallbackProfile);
+        return;
+      }
+
+      if (await applyWeeklyCredits(ensuredProfile ?? fallbackProfile)) {
         return;
       }
 

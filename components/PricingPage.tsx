@@ -15,6 +15,8 @@ interface PricingPageProps {
   hasOwnKeys: boolean;
   onPurchaseTurns: (count: number) => void;
   onPurchaseCredits?: (count: number) => void;
+  onPurchaseSubscription?: (plan: 'starter' | 'pro') => void;
+  onPurchaseAdFree?: () => void;
 }
 
 const CheckIcon = () => (
@@ -25,6 +27,8 @@ const CheckIcon = () => (
 
 export const PricingPage: FC<PricingPageProps> = ({
   onPurchaseCredits,
+  onPurchaseSubscription,
+  onPurchaseAdFree,
 }) => {
   const { language } = useLanguage();
 
@@ -91,6 +95,7 @@ export const PricingPage: FC<PricingPageProps> = ({
                 <li className="flex items-center gap-2 text-sm font-bold text-black dark:text-white"><CheckIcon /> <span>Complete analyse</span></li>
                 <li className="flex items-center gap-2 text-sm font-bold text-black dark:text-white"><CheckIcon /> <span>Multi AI inzet</span></li>
                 <li className="flex items-center gap-2 text-sm font-bold text-black dark:text-white"><CheckIcon /> <span>Opslaan &amp; delen</span></li>
+                <li className="flex items-center gap-2 text-sm font-bold text-black/60 dark:text-white/50"><CheckIcon /> <span>{language === 'nl' ? 'Gratis omgeving kan advertenties tonen' : 'Free environment may show ads'}</span></li>
               </ul>
 
               <button onClick={() => handlePurchase(pkg.count)} className="w-full bg-black text-white hover:bg-[var(--action)] hover:text-black p-3 font-black text-sm uppercase tracking-widest transition-all border-4 border-black shadow-md hover:shadow-none hover:translate-x-1 hover:translate-y-1">
@@ -111,6 +116,20 @@ export const PricingPage: FC<PricingPageProps> = ({
             ? 'Credits verlopen nooit · Geen automatische verlenging bij losse pakketten · Vragen? contact@fainl.com'
             : 'Credits never expire · No auto-renewal on one-time packs · Questions? contact@fainl.com'}
         </p>
+        <p className="mt-2 text-center text-sm font-bold text-black/40 dark:text-white/30 max-w-lg mx-auto">
+          {language === 'nl'
+            ? 'Eenmalig reclamevrij maken is beschikbaar als losse Stripe-aankoop.'
+            : 'One-time ad removal is available as a separate Stripe purchase.'}
+        </p>
+        <div className="mt-5 flex justify-center">
+          <button
+            type="button"
+            onClick={onPurchaseAdFree}
+            className="bg-white text-black hover:bg-[var(--action)] p-3 px-5 font-black text-xs uppercase tracking-widest transition-all border-4 border-black shadow-md hover:shadow-none hover:translate-x-1 hover:translate-y-1"
+          >
+            {language === 'nl' ? 'Eenmalig reclamevrij maken' : 'Remove ads once'}
+          </button>
+        </div>
       </div>
 
 
@@ -146,17 +165,17 @@ export const PricingPage: FC<PricingPageProps> = ({
                 <li className="flex items-center gap-2 text-sm font-bold text-black dark:text-white"><CheckIcon /> <span>{language === 'nl' ? 'Directe beraadslaging' : 'Instant deliberation'}</span></li>
                 <li className="flex items-center gap-2 text-sm font-bold text-black dark:text-white"><CheckIcon /> <span>Multi AI inzet</span></li>
                 <li className="flex items-center gap-2 text-sm font-bold text-black dark:text-white"><CheckIcon /> <span>{language === 'nl' ? 'Eigen API-sleutels gebruiken' : 'Use your own API keys'}</span></li>
+                <li className="flex items-center gap-2 text-sm font-bold text-black dark:text-white"><CheckIcon /> <span>{language === 'nl' ? 'Geen advertenties in FAINL' : 'No ads inside FAINL'}</span></li>
                 <li className="flex items-center gap-2 text-sm font-bold text-black dark:text-white"><CheckIcon /> <span>{language === 'nl' ? 'Exclusieve modellen' : 'Exclusive models'}</span></li>
               </ul>
 
-              <a
-                href={pkg.stripeUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                type="button"
+                onClick={() => onPurchaseSubscription?.(pkg.id as 'starter' | 'pro')}
                 className="block w-full bg-black text-white hover:bg-[var(--action)] hover:text-black p-3 font-black text-sm uppercase tracking-widest transition-all border-4 border-black shadow-md hover:shadow-none hover:translate-x-1 hover:translate-y-1 text-center"
               >
                 {language === 'nl' ? `Start ${pkg.label}` : `Start ${pkg.label}`}
-              </a>
+              </button>
             </div>
           ))}
         </div>

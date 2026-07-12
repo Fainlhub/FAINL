@@ -231,18 +231,19 @@ export const PRESETS = [
 ];
 
 export const PRICING = {
-  // Eenmalige credit-pakketten (vul stripeUrl in na aanmaken in Stripe Dashboard)
+  // Product IDs here are app-facing keys. Stripe prices are controlled server-side
+  // in supabase/functions/create-payment so users cannot tamper with credits/amounts.
   CREDITS: [
-    { count: 1,   price: 2.99,   label: "1 Credit",    stripeUrl: "https://buy.stripe.com/00w4gs7Gegwr5xneey7Re0a" },
-    { count: 5,   price: 9.99,   label: "5 Credits",   stripeUrl: "https://buy.stripe.com/fZu6oA8Kieoj7FvgmG7Re0b" },
-    { count: 10,  price: 17.99,  label: "10 Credits",  stripeUrl: "https://buy.stripe.com/00weV6e4Ccgb9ND1rM7Re0c" },
-    { count: 30,  price: 44.99,  label: "30 Credits",  stripeUrl: "https://buy.stripe.com/aFa3co5y67ZVaRHb2m7Re0d" },
-    { count: 100, price: 119.99, label: "100 Credits", stripeUrl: "https://buy.stripe.com/cNi6oAd0y7ZV3pf4DY7Re0e" },
+    { count: 1,   price: 2.99,   label: "1 Credit" },
+    { count: 5,   price: 9.99,   label: "5 Credits" },
+    { count: 10,  price: 17.99,  label: "10 Credits" },
+    { count: 30,  price: 44.99,  label: "30 Credits" },
+    { count: 100, price: 119.99, label: "100 Credits" },
   ],
   // Maandabonnementen
   SUBSCRIPTIONS: [
-    { id: "starter", name: "Starter", count: 50,  creditsPerMonth: 50,  price: 49.99,  label: "Starter abo", period: "p/m", stripeUrl: "https://buy.stripe.com/28E3cobWu4NJ0d32vQ7Re0f" },
-    { id: "pro",     name: "Pro",     count: 300, creditsPerMonth: 300, price: 219.99, label: "Pro abo",     period: "p/m", stripeUrl: "https://buy.stripe.com/dRmcMY6Ca93Z0d3b2m7Re0h" },
+    { id: "starter", name: "Starter", count: 50,  creditsPerMonth: 50,  price: 49.99,  label: "Starter abo", period: "p/m" },
+    { id: "pro",     name: "Pro",     count: 300, creditsPerMonth: 300, price: 219.99, label: "Pro abo",     period: "p/m" },
   ],
   // Alias voor backwards-compatibiliteit
   get TURNS() { return this.CREDITS; },

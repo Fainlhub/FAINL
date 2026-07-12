@@ -734,7 +734,7 @@ export const LandingPage: FC = () => {
               <button
                 key={pkg.count}
                 type="button"
-                onClick={() => window.open(pkg.stripeUrl, "_blank")}
+                onClick={() => navigate('/tokens')}
                 className="flex flex-col items-center justify-center p-6 sm:p-10 bg-white dark:bg-black border-2 md:border-4 border-black rounded-none hover:border-[var(--line)] hover:shadow-md md:hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group"
               >
                 <div className="text-5xl sm:text-6xl font-black mb-2 text-black dark:text-white">{pkg.count}</div>
@@ -747,7 +747,7 @@ export const LandingPage: FC = () => {
 
             <button
               type="button"
-              onClick={() => window.open(PRICING.SUBSCRIPTIONS[0].stripeUrl, "_blank")}
+              onClick={() => navigate('/tokens')}
               className="flex flex-col items-center justify-center p-10 bg-black text-white border-2 border-black rounded-none hover:shadow-lg hover:-translate-y-1 transition-all duration-300 relative group"
             >
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-[var(--action)] text-black text-sm font-black uppercase tracking-[0.2em] whitespace-nowrap">

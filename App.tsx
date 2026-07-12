@@ -9,7 +9,6 @@ import {
   DEFAULT_COUNCIL,
   DEFAULT_CHAIRMAN,
   USAGE_LIMITS,
-  PRICING,
 } from "./constants";
 import {
   CouncilResponse,
@@ -50,6 +49,8 @@ import {
   Route,
 } from "react-router-dom";
 import { SEO } from "./components/SEO";
+import { AdSenseLoader } from "./components/AdSenseLoader";
+import { startCheckout } from "./services/payments";
 const LoginPage = lazy(() => import("./components/LoginPage").then(m => ({ default: m.LoginPage })));
 import { CookieConsent } from "./components/CookieConsent";
 const LandingPage = lazy(() => import("./components/LandingPage").then(m => ({ default: m.LandingPage })));
@@ -94,14 +95,24 @@ const CyberLogo: FC<{ isAnimated?: boolean }> = ({ isAnimated = true }) => {
   );
 };
 
-// Shown after Stripe redirects back. Reads ?payment_confirm=true&type=credits&count=X
-// which must be configured as the success URL in each Stripe Payment Link dashboard.
+// Shown after Stripe redirects back from server-created Checkout Sessions.
 const PaymentSuccessPage: FC = () => {
   const navigate = useNavigate();
+  const { authSession, fetchProfile, profile } = useAuth();
   const params = new URLSearchParams(window.location.search);
-  const count = params.get('count') || '?';
-  const type = params.get('type');
-  const isConfirmed = params.get('payment_confirm') === 'true';
+  const hasCheckoutSession = params.has('checkout_session_id');
+
+  useEffect(() => {
+    if (!hasCheckoutSession || !authSession?.user?.id) return;
+
+    const timers = [0, 2500, 7500].map((delay) =>
+      window.setTimeout(() => {
+        fetchProfile(authSession.user.id);
+      }, delay)
+    );
+
+    return () => timers.forEach((timer) => window.clearTimeout(timer));
+  }, [authSession?.user?.id, fetchProfile, hasCheckoutSession]);
 
   return (
     <div className="max-w-xl mx-auto px-4 py-16 md:py-24 text-center animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -117,17 +128,22 @@ const PaymentSuccessPage: FC = () => {
           <CircleCheck className="w-8 h-8 md:w-10 md:h-10 text-black" />
         </div>
         <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tighter mb-3 text-black dark:text-white">
-          {isConfirmed ? 'Betaling Bevestigd!' : 'Bedankt!'}
+          {hasCheckoutSession ? 'Betaling Ontvangen!' : 'Bedankt!'}
         </h1>
         <p className="font-bold text-black dark:text-white/80 mb-2 text-lg">
-          {isConfirmed && type === 'credits'
-            ? `${count} credits zijn toegevoegd aan jouw account.`
-            : isConfirmed && type === 'lifetime'
-            ? 'Onbeperkte toegang geactiveerd.'
-            : 'Je betaling is verwerkt. Ga terug naar het dashboard om je credits te bekijken.'}
+          {hasCheckoutSession
+            ? 'Stripe verwerkt je aankoop. Je account wordt automatisch bijgewerkt zodra de webhook is ontvangen.'
+            : 'Je betaling is verwerkt. Ga terug naar het dashboard om je account te bekijken.'}
         </p>
+        {hasCheckoutSession && (
+          <p className="text-sm font-bold text-black/50 dark:text-white/40 mb-6">
+            {authSession?.user?.id
+              ? `Huidige status: ${profile ? `${profile.credits_remaining} credits beschikbaar.` : 'profiel wordt geladen...'}`
+              : 'Log opnieuw in als je credits niet direct zichtbaar zijn.'}
+          </p>
+        )}
         <p className="text-sm font-bold text-black/50 dark:text-white/40 uppercase tracking-widest mb-8">
-          Je kunt direct je volgende vraag stellen aan de Raad.
+          Je kunt terug naar Mijn FAINL zodra de verwerking klaar is.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
@@ -156,6 +172,11 @@ const App: FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const rootSearchParams = new URLSearchParams(location.search);
+  const hasAdFreeAccess = Boolean(
+    profile?.is_lifetime ||
+    profile?.ad_free_lifetime ||
+    ['active', 'trialing'].includes(profile?.subscription_status || '')
+  );
   const isRootAuthCallback =
     location.pathname === '/' &&
     (
@@ -671,51 +692,44 @@ const App: FC = () => {
     }));
   };
 
-  const handlePurchaseTurns = (count: number) => {
-    const creditPkg = PRICING.CREDITS.find(p => p.count === count);
-    const subPkg = PRICING.SUBSCRIPTIONS.find(p => p.count === count || p.creditsPerMonth === count);
-    const pkg = creditPkg || subPkg;
-    if (!pkg?.stripeUrl) {
-      alert("Deze betaallink is nog niet actief.");
-      return;
+  const requireLoginForCheckout = () => {
+    if (!authSession?.user?.id) {
+      navigate('/login?next=/tokens');
+      return false;
     }
-    // Stripe Payment Links do not support ?success_url= overrides.
-    // Configure each Payment Link's success URL in the Stripe Dashboard to:
-    //   https://fainl.com/?payment_confirm=true&type=credits&count=X
-    // where X is the number of credits for that product.
-    try {
-      const destination = new URL(pkg.stripeUrl);
-      if (!destination.hostname.endsWith('stripe.com')) throw new Error('invalid host');
-    } catch {
-      alert("Ongeldige betaallink. Neem contact op met support.");
-      return;
-    }
-    window.location.href = pkg.stripeUrl;
+    return true;
   };
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('payment_confirm') === 'true') {
-      const type = params.get('type');
-      const countStr = params.get('count');
-      const count = countStr === 'infinity' ? Infinity : parseInt(countStr || '0', 10);
-
-      if (type === 'lifetime') {
-        setConfig(prev => ({ ...prev, isLifetime: true }));
-      } else if (type === 'credits' || type === 'turns') {
-        // Both credits and subscription purchases add to creditsRemaining
-        setConfig(prev => ({
-          ...prev,
-          creditsRemaining: prev.creditsRemaining + (isFinite(count as number) ? (count as number) : 0),
-          isLifetime: count === Infinity ? true : prev.isLifetime,
-        }));
-      }
-      window.history.replaceState({}, document.title, window.location.pathname);
+  const handlePurchaseTurns = async (count: number) => {
+    if (!requireLoginForCheckout()) return;
+    try {
+      await startCheckout({ type: 'credits', count });
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Checkout starten mislukt.");
     }
-  }, []);
+  };
+
+  const handlePurchaseSubscription = async (plan: 'starter' | 'pro') => {
+    if (!requireLoginForCheckout()) return;
+    try {
+      await startCheckout({ type: 'subscription', plan });
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Checkout starten mislukt.");
+    }
+  };
+
+  const handlePurchaseAdFree = async () => {
+    if (!requireLoginForCheckout()) return;
+    try {
+      await startCheckout({ type: 'ad_free' });
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Checkout starten mislukt.");
+    }
+  };
 
   return (
     <AppShell>
+      <AdSenseLoader disabled={Boolean((authSession && !profile) || hasAdFreeAccess)} />
 
       {isAnnouncementVisible && newsletterState !== 'success' && (
         <div className="w-full bg-[var(--action)] text-black px-4 py-4 relative border-b-4 border-black">
@@ -931,6 +945,8 @@ const App: FC = () => {
                 hasOwnKeys={profile ? profile.credits_remaining > 0 : config.creditsRemaining > 0}
                 onPurchaseTurns={handlePurchaseTurns}
                 onPurchaseCredits={handlePurchaseTurns}
+                onPurchaseSubscription={handlePurchaseSubscription}
+                onPurchaseAdFree={handlePurchaseAdFree}
               />
             }
           />

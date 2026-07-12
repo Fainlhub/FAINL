@@ -1,12 +1,12 @@
 import { FC, useEffect, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useChat } from '../../contexts/ChatContext';
 import { MessageList } from './MessageList';
 import { ChatComposer } from './ChatComposer';
 import { PaywallModal } from '../PaywallModal';
 import { SEO } from '../SEO';
-import { PRICING } from '../../constants';
+import { startCheckout } from '../../services/payments';
 
 const EXAMPLE_QUESTIONS = [
   'Moet ik van baan wisselen?',
@@ -24,6 +24,7 @@ const pickRandom = (arr: string[], n: number): string[] =>
 
 export const ChatView: FC = () => {
   const { threadId } = useParams<{ threadId: string }>();
+  const navigate = useNavigate();
   const { authSession } = useAuth();
   const {
     messages,
@@ -56,16 +57,16 @@ export const ChatView: FC = () => {
     return name ? `${base}, ${name}.` : `${base}.`;
   };
 
-  const handlePurchase = (count: number) => {
-    const pkg = PRICING.CREDITS.find(p => p.count === count);
-    if (!pkg?.stripeUrl) return;
-    try {
-      const destination = new URL(pkg.stripeUrl);
-      if (!destination.hostname.endsWith('stripe.com')) throw new Error('invalid host');
-    } catch {
+  const handlePurchase = async (count: number) => {
+    if (!authSession?.user?.id) {
+      navigate('/login?next=/tokens');
       return;
     }
-    window.location.href = pkg.stripeUrl;
+    try {
+      await startCheckout({ type: 'credits', count });
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Checkout starten mislukt.');
+    }
   };
 
   const isEmpty = messages.length === 0 && !chatError;
