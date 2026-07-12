@@ -1,4 +1,4 @@
-  import { FC, useState, useEffect, useRef } from "react";
+import { FC, useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
   ArrowRight,
@@ -46,7 +46,31 @@ const JSON_LD = {
   "@context": "https://schema.org",
   "@graph": [
     {
+      "@type": "WebPage",
+      "@id": "https://fainl.com/#webpage",
+      url: "https://fainl.com/",
+      name: "FAINL - AI Eindoordeel Engine",
+      headline: "FAINL - AI Eindoordeel Engine",
+      description:
+        "FAINL laat meerdere AI-modellen tegelijk analyseren, debatteren en samen een gewogen eindoordeel geven.",
+      inLanguage: "nl-NL",
+      isPartOf: { "@id": "https://fainl.com/#website" },
+      publisher: { "@id": "https://fainl.com/#organization" },
+    },
+    {
+      "@type": "Article",
+      "@id": "https://fainl.com/#landing-article",
+      headline: "FAINL - Meerdere AI's. Een gewogen eindoordeel.",
+      description:
+        "Introductie van FAINL als multi-model AI-platform voor analyse, debat en een helder eindantwoord.",
+      image: "https://fainl.com/fainl-logo.png",
+      author: { "@id": "https://fainl.com/#organization" },
+      publisher: { "@id": "https://fainl.com/#organization" },
+      mainEntityOfPage: { "@id": "https://fainl.com/#webpage" },
+    },
+    {
       "@type": "WebApplication",
+      "@id": "https://fainl.com/#app",
       name: "FAINL",
       url: "https://fainl.com",
       applicationCategory: "BusinessApplication",
@@ -72,9 +96,17 @@ const JSON_LD = {
     },
     {
       "@type": "Organization",
+      "@id": "https://fainl.com/#organization",
       name: "FAINL",
       url: "https://fainl.com",
       logo: "https://fainl.com/favicon.png",
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://fainl.com/#website",
+      url: "https://fainl.com/",
+      name: "FAINL",
+      publisher: { "@id": "https://fainl.com/#organization" },
     },
     {
       "@type": "FAQPage",
@@ -115,12 +147,12 @@ const FAQItem: FC<{ q: string; a: string }> = ({ q, a }) => {
 
 // ── AI Ticker Models ─────────────────────────────────────────────────────────
 const AI_MODELS = [
-  { name: "Google Gemini",    icon: <img src="/ai-logos/gemini-color.svg" alt="Google Gemini"    className="w-6 h-6 flex-shrink-0 object-contain" /> },
-  { name: "OpenAI GPT",       icon: <img src="/ai-logos/openai.svg"        alt="OpenAI"           className="w-6 h-6 flex-shrink-0 object-contain" /> },
-  { name: "Anthropic Claude", icon: <img src="/ai-logos/claude.svg"        alt="Anthropic Claude" className="w-6 h-6 flex-shrink-0 object-contain" /> },
-  { name: "Mistral AI",       icon: <img src="/ai-logos/mistral.svg"       alt="Mistral AI"       className="w-6 h-6 flex-shrink-0 object-contain" /> },
-  { name: "DeepSeek",         icon: <img src="/ai-logos/deepseek.svg"      alt="DeepSeek"         className="w-6 h-6 flex-shrink-0 object-contain" /> },
-  { name: "Groq (Llama)",     icon: <img src="/ai-logos/groq.svg"          alt="Groq"             className="w-6 h-6 flex-shrink-0 object-contain" /> },
+  { name: "Google Gemini",    icon: <img src="/ai-logos/gemini-color.svg" alt="Google Gemini"    width={24} height={24} className="w-6 h-6 flex-shrink-0 object-contain" /> },
+  { name: "OpenAI GPT",       icon: <img src="/ai-logos/openai.svg"        alt="OpenAI"           width={24} height={24} className="w-6 h-6 flex-shrink-0 object-contain" /> },
+  { name: "Anthropic Claude", icon: <img src="/ai-logos/claude.svg"        alt="Anthropic Claude" width={24} height={24} className="w-6 h-6 flex-shrink-0 object-contain" /> },
+  { name: "Mistral AI",       icon: <img src="/ai-logos/mistral.svg"       alt="Mistral AI"       width={24} height={24} className="w-6 h-6 flex-shrink-0 object-contain" /> },
+  { name: "DeepSeek",         icon: <img src="/ai-logos/deepseek.svg"      alt="DeepSeek"         width={24} height={24} className="w-6 h-6 flex-shrink-0 object-contain" /> },
+  { name: "Groq (Llama)",     icon: <img src="/ai-logos/groq.svg"          alt="Groq"             width={24} height={24} className="w-6 h-6 flex-shrink-0 object-contain" /> },
 ];
 
 
@@ -316,7 +348,10 @@ export const LandingPage: FC = () => {
         keywords="AI eindoordeel engine, meerdere AI modellen vergelijken, AI debat tool, ChatGPT alternatief Nederland, Gemini GPT-4 Claude samen, AI beslissingstool, kunstmatige intelligentie tool gratis, multi-model AI"
         ogTitle="FAINL — Laat meerdere AI's voor jou debatteren"
         ogDescription="Gemini, GPT-4, Claude én Llama analyseren tegelijk jouw vraag en debatteren live. FAINL synthetiseert het scherpste AI-oordeel. Gratis proberen."
-        jsonLd={JSON_LD}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
       />
 
       {/* ══ HERO ══ */}
@@ -513,7 +548,7 @@ export const LandingPage: FC = () => {
             >
               <div className="flex-shrink-0 w-20 h-20 flex items-center justify-center bg-black text-white relative">
                  <span className="absolute -top-3 -left-3 w-8 h-8 bg-[var(--action)] text-white font-black flex items-center justify-center text-sm">0{idx+1}</span>
-                <img src={img} alt={title} className="w-10 h-10 object-contain invert" />
+                <img src={img} alt={title} width={40} height={40} className="w-10 h-10 object-contain invert" />
               </div>
               <div className="flex-1 text-center md:text-left">
                 <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-black dark:text-white mb-4">
