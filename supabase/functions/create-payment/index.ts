@@ -11,10 +11,21 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
 const SITE_URL = Deno.env.get("SITE_URL") || "https://www.fainl.com";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
+const allowedOrigins = new Set(
+  (Deno.env.get("ALLOWED_ORIGINS") || "https://fainl.com,https://www.fainl.com,http://localhost:3000")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+);
+
+const corsHeaders = (req: Request) => {
+  const origin = req.headers.get("origin") || "";
+  return {
+    "Access-Control-Allow-Origin": allowedOrigins.has(origin) ? origin : "https://fainl.com",
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Vary": "Origin",
+  };
 };
 
 const creditProducts = new Map<number, { label: string; amount: number }>([
@@ -35,10 +46,10 @@ const adFreeProduct = {
   amount: 999,
 };
 
-const json = (body: unknown, status = 200) =>
+const json = (req: Request, body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...corsHeaders(req), "Content-Type": "application/json" },
   });
 
 const getUser = async (authorization: string) => {
@@ -77,11 +88,11 @@ const appendLineItem = (
 
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response("ok", { headers: corsHeaders(req) });
   }
 
   if (req.method !== "POST") {
-    return json({ error: "Method not allowed" }, 405);
+    return json(req, { error: "Method not allowed" }, 405);
   }
 
   try {
@@ -91,12 +102,12 @@ serve(async (req: Request) => {
 
     const authorization = req.headers.get("authorization") || "";
     if (!authorization.toLowerCase().startsWith("bearer ")) {
-      return json({ error: "Login required" }, 401);
+      return json(req, { error: "Login required" }, 401);
     }
 
     const user = await getUser(authorization);
     if (!user?.id) {
-      return json({ error: "Invalid session" }, 401);
+      return json(req, { error: "Invalid session" }, 401);
     }
 
     const product = (await req.json()) as ProductRequest;
@@ -116,7 +127,7 @@ serve(async (req: Request) => {
     if (product.type === "credits") {
       const creditProduct = creditProducts.get(product.count);
       if (!creditProduct) {
-        return json({ error: "Unknown credit package" }, 400);
+        return json(req, { error: "Unknown credit package" }, 400);
       }
       params.append("mode", "payment");
       appendLineItem(params, creditProduct.label, creditProduct.amount);
@@ -138,7 +149,7 @@ serve(async (req: Request) => {
       appendLineItem(params, adFreeProduct.label, adFreeProduct.amount);
       metadata.type = "ad_free";
     } else {
-      return json({ error: "Unknown product type" }, 400);
+      return json(req, { error: "Unknown product type" }, 400);
     }
 
     for (const [key, value] of Object.entries(metadata)) {
@@ -156,12 +167,11 @@ serve(async (req: Request) => {
 
     const data = await response.json();
     if (!response.ok) {
-      return json({ error: data.error?.message || "Failed to create checkout session" }, 400);
+      return json(req, { error: "Failed to create checkout session" }, 400);
     }
 
-    return json({ checkoutUrl: data.url, sessionId: data.id });
+    return json(req, { checkoutUrl: data.url, sessionId: data.id });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Internal Server Error";
-    return json({ error: message }, 400);
+    return json(req, { error: "Checkout is unavailable" }, 400);
   }
 });

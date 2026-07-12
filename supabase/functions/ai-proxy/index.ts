@@ -17,6 +17,8 @@ const SECRETS: Record<string, string | undefined> = {
 }
 
 const TTS_SA_JSON: string | undefined = Deno.env.get('GOOGLE_TTS_SA_KEY')
+const SUPABASE_URL: string | undefined = Deno.env.get('SUPABASE_URL')
+const SUPABASE_ANON_KEY: string | undefined = Deno.env.get('SUPABASE_ANON_KEY')
 
 const BASE_URLS: Record<string, string> = {
   openai:     'https://api.openai.com/v1',
@@ -87,20 +89,19 @@ function isRateLimited(ip: string): boolean {
   return hits.length > RATE_LIMIT_MAX
 }
 
-// A real user session sends a JWT (three dot-separated segments with a sub
-// claim) instead of the shared anon/publishable key. Signature verification is
-// unnecessary here: this only relaxes rate limits, grants no data access.
-function hasUserJwt(req: Request): boolean {
+async function hasValidUserSession(req: Request): Promise<boolean> {
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return false
   const auth = req.headers.get('authorization') ?? ''
   const token = auth.replace(/^Bearer\s+/i, '')
-  const parts = token.split('.')
-  if (parts.length !== 3) return false
-  try {
-    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')))
-    return typeof payload.sub === 'string' && payload.role !== 'anon'
-  } catch {
-    return false
-  }
+  if (!token || token === SUPABASE_ANON_KEY) return false
+
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+    headers: {
+      apikey: SUPABASE_ANON_KEY,
+      authorization: `Bearer ${token}`,
+    },
+  })
+  return res.ok
 }
 
 // ─── Service Account JWT helpers ─────────────────────────────────────────────
@@ -234,7 +235,7 @@ serve(async (req: Request) => {
       return errRes('Missing required fields: provider, prompt or messages', 400)
     }
 
-    if (!hasUserJwt(req)) {
+    if (!(await hasValidUserSession(req))) {
       const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
       if (isRateLimited(ip)) {
         return errRes('Te veel verzoeken. Probeer het over een paar minuten opnieuw.', 429)
@@ -302,7 +303,7 @@ async function google(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
-  if (!res.ok) return errRes(`Google ${res.status}: ${await res.text()}`, res.status)
+  if (!res.ok) return errRes(`Google request failed (${res.status})`, res.status)
   const data = await res.json()
   return okRes({ content: data.candidates?.[0]?.content?.parts?.[0]?.text ?? '' })
 }
@@ -362,7 +363,7 @@ async function anthropic(
     },
     body: JSON.stringify(body),
   })
-  if (!res.ok) return errRes(`Anthropic ${res.status}: ${await res.text()}`, res.status)
+  if (!res.ok) return errRes(`Anthropic request failed (${res.status})`, res.status)
   const data = await res.json()
   return okRes({ content: data.content?.[0]?.text ?? '' })
 }
@@ -409,9 +410,10 @@ async function generic(
   temperature = 0.7, maxTokens = 2048, customBaseUrl?: string
 ): Promise<Response> {
   const apiKey = SECRETS[provider]
-  const baseUrl = customBaseUrl || BASE_URLS[provider]
+  const baseUrl = BASE_URLS[provider]
   if (!apiKey) return errRes(`${provider} API key not set on server`, 503)
   if (!baseUrl) return errRes(`Unknown provider: ${provider}`, 400)
+  if (customBaseUrl && customBaseUrl !== baseUrl) return errRes('Custom provider endpoints are not allowed', 400)
 
   const messages: any[] = []
   if (systemInstruction) messages.push({ role: 'system', content: systemInstruction })
@@ -422,7 +424,7 @@ async function generic(
     headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ model: modelId, messages, temperature, max_tokens: maxTokens }),
   })
-  if (!res.ok) return errRes(`${provider} ${res.status}: ${await res.text()}`, res.status)
+  if (!res.ok) return errRes(`${provider} request failed (${res.status})`, res.status)
   const data = await res.json()
   return okRes({ content: data.choices?.[0]?.message?.content ?? '' })
 }
@@ -432,9 +434,10 @@ async function genericStream(
   temperature = 0.7, maxTokens = 2048, customBaseUrl?: string
 ): Promise<Response> {
   const apiKey = SECRETS[provider]
-  const baseUrl = customBaseUrl || BASE_URLS[provider]
+  const baseUrl = BASE_URLS[provider]
   if (!apiKey) return errRes(`${provider} API key not set on server`, 503)
   if (!baseUrl) return errRes(`Unknown provider: ${provider}`, 400)
+  if (customBaseUrl && customBaseUrl !== baseUrl) return errRes('Custom provider endpoints are not allowed', 400)
 
   const messages: any[] = []
   if (systemInstruction) messages.push({ role: 'system', content: systemInstruction })
@@ -533,7 +536,7 @@ async function googleChirpTTS(
       audioConfig: { audioEncoding: 'MP3', speakingRate },
     }),
   })
-  if (!res.ok) return errRes(`Google TTS ${res.status}: ${await res.text()}`, res.status)
+  if (!res.ok) return errRes(`Google TTS request failed (${res.status})`, res.status)
   const data = await res.json()
   return okRes({ audioContent: data.audioContent ?? '' })
 }

@@ -27,9 +27,8 @@ export const ContactPage: FC = () => {
                 setPayload('');
                 setStatus('idle');
             }, 3000);
-        } catch (err: any) {
-            console.error('Transmission failed:', err);
-            setErrorMessage(err.message || 'Verzending mislukt. Probeer het opnieuw.');
+        } catch {
+            setErrorMessage('Verzending mislukt. Probeer het opnieuw.');
             setStatus('error');
             setTimeout(() => setStatus('idle'), 5000);
         }

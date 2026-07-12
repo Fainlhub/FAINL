@@ -23,13 +23,11 @@ const configuredSiteOrigin = () => {
     const hostname = new URL(origin).hostname;
 
     if (hostname.endsWith(SUPABASE_HOST_SUFFIX)) {
-      console.error('Configured site URL points to Supabase instead of the FAINL app:', configuredUrl);
       return null;
     }
 
     return origin;
   } catch {
-    console.error('Configured site URL is invalid:', configuredUrl);
     return null;
   }
 };
