@@ -443,6 +443,32 @@ body.sidebar-resizing .main-canvas {
 }
 .main-canvas.sidebar-collapsed { margin-left: var(--sb-w-collapsed); }
 
+.legal-footer {
+  margin-top: auto;
+  padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+}
+.legal-footer__nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px 14px;
+}
+.legal-footer__link {
+  color: var(--ink-4);
+  font-family: var(--f-ui);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.4;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: color 0.12s, opacity 0.12s;
+}
+.legal-footer__link:hover {
+  color: var(--ink);
+  opacity: 1;
+}
+
 @media (max-width: 1023px) {
   .sidebar {
     transform: translateX(-100%);
@@ -1819,6 +1845,7 @@ html.dark .panel-link-btn--danger { color: #f2b8b5; }
   transition: background 0.12s, color 0.12s;
 }
 .flyout-btn:hover { background: var(--sidebar-2); color: #fff; }
+.flyout-btn.active { background: var(--sidebar-2); color: #fff; }
 .flyout-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
 .flyout-btn--spread { justify-content: space-between; }
 .flyout-btn--user { padding-left: 8px; }

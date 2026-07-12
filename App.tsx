@@ -28,6 +28,7 @@ const PrivacyPolicyPage = lazy(() => import("./components/PrivacyPolicyPage").th
 const TermsOfServicePage = lazy(() => import("./components/TermsOfServicePage").then(m => ({ default: m.TermsOfServicePage })));
 const AiTermsPage = lazy(() => import("./components/AiTermsPage").then(m => ({ default: m.AiTermsPage })));
 const CookieDeclarationPage = lazy(() => import("./components/CookieDeclarationPage").then(m => ({ default: m.CookieDeclarationPage })));
+const ProcessingAgreementPage = lazy(() => import("./components/ProcessingAgreementPage").then(m => ({ default: m.ProcessingAgreementPage })));
 import { DebateRoom } from "./components/DebateRoom";
 import { ComparePage } from "./components/ComparePage";
 const BestAIToolPage = lazy(() => import("./components/BestAIToolPage").then(m => ({ default: m.BestAIToolPage })));
@@ -969,6 +970,7 @@ const App: FC = () => {
           <Route path="/terms" element={<TermsOfServicePage />} />
           <Route path="/ai-voorwaarden" element={<AiTermsPage />} />
           <Route path="/cookies" element={<CookieDeclarationPage />} />
+          <Route path="/verwerkersovereenkomst" element={<ProcessingAgreementPage />} />
 
           {/* Inclusie */}
           <Route path="/inclusie" element={<InclusionPage />} />

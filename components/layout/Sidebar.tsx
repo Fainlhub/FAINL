@@ -1,5 +1,5 @@
 import { FC, useState, useMemo, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '../../services/supabaseClient';
 import {
   Plus,
@@ -27,6 +27,7 @@ import {
   Settings2,
   Palette,
   Puzzle,
+  Newspaper,
 } from 'lucide-react';
 import { useChat } from '../../contexts/ChatContext';
 import { ChatThread } from '../../types';
@@ -89,6 +90,7 @@ export const Sidebar: FC<SidebarProps> = ({
   onNavigate,
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const {
     threads,
     projects,
@@ -149,6 +151,7 @@ export const Sidebar: FC<SidebarProps> = ({
   const groups = useMemo(() => groupByDate(ungrouped), [ungrouped]);
 
   const go = (fn: () => void) => { fn(); onNavigate?.(); };
+  const newsActive = location.pathname === '/nieuws' || location.pathname.startsWith('/nieuws/');
 
   const handleOpenThread = (id: string) => go(() => { openThread(id); navigate('/'); });
 
@@ -367,6 +370,17 @@ export const Sidebar: FC<SidebarProps> = ({
 
       {/* Footer */}
       <div className="sidebar-footer">
+        <button
+          className={`flyout-btn flyout-btn--spread${newsActive ? ' active' : ''}`}
+          onClick={() => go(() => navigate('/nieuws'))}
+          aria-current={newsActive ? 'page' : undefined}
+        >
+          <span className="flyout-btn__icon-label">
+            <Newspaper className="flyout-icon" />
+            <span>AI nieuws</span>
+            {newsActive && <span className="sidebar-badge">Actief</span>}
+          </span>
+        </button>
         <button className="flyout-btn flyout-btn--spread" onClick={() => setPanel('nodes')}>
           <span className="flyout-btn__icon-label">
             <Settings2 className="flyout-icon" />

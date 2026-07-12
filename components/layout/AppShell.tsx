@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 import { BottomNav } from './BottomNav';
+import { LegalFooter } from './LegalFooter';
 import { useAuth } from '../../contexts/AuthContext';
 import { ThemePref, getStoredThemePref, storeThemePref, resolveDark } from './theme';
 
@@ -116,6 +117,7 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
         <div id="main-content" role="main" aria-live="polite">
           {children}
         </div>
+        <LegalFooter />
       </div>
 
       <BottomNav />
