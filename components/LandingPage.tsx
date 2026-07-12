@@ -801,6 +801,17 @@ export const LandingPage: FC = () => {
           <p className="mt-8 text-xs font-black uppercase tracking-[0.4em] text-black">
             Twee sessies gratis — Geen creditcard vereist.
           </p>
+          <nav
+            aria-label="Juridische en contactlinks"
+            className="mt-8 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[10px] font-black uppercase tracking-[0.2em] text-black/45"
+          >
+            <Link to="/terms" className="hover:text-black transition-colors">Terms</Link>
+            <Link to="/privacy" className="hover:text-black transition-colors">Privacy</Link>
+            <Link to="/ai-voorwaarden" className="hover:text-black transition-colors">AI statement</Link>
+            <Link to="/cookies" className="hover:text-black transition-colors">Cookies</Link>
+            <Link to="/faq" className="hover:text-black transition-colors">FAQ</Link>
+            <Link to="/contact" className="hover:text-black transition-colors">Contact</Link>
+          </nav>
         </div>
       </section>
     </>
