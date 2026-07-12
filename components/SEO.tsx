@@ -59,9 +59,10 @@ export const SEO: FC<SEOProps> = ({
 
       {/* ── JSON-LD Structured Data ─────────────── */}
       {jsonLd && (
-        <script type="application/ld+json">
-          {JSON.stringify(jsonLd)}
-        </script>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
       )}
     </Helmet>
   );

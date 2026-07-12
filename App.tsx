@@ -37,6 +37,9 @@ const UseCaseHRPage = lazy(() => import("./components/UseCaseHRPage").then(m => 
 const UseCaseFinancePage = lazy(() => import("./components/UseCaseFinancePage").then(m => ({ default: m.UseCaseFinancePage })));
 const CompareVsChatGPTPage = lazy(() => import("./components/CompareVsChatGPTPage").then(m => ({ default: m.CompareVsChatGPTPage })));
 const CompareMultiModelPage = lazy(() => import("./components/CompareMultiModelPage").then(m => ({ default: m.CompareMultiModelPage })));
+const NewsPage = lazy(() => import("./components/NewsPage").then(m => ({ default: m.NewsPage })));
+const SeoArticlePage = lazy(() => import("./components/SeoArticlePage").then(m => ({ default: m.SeoArticlePage })));
+const NewsAdminPage = lazy(() => import("./components/NewsAdminPage").then(m => ({ default: m.NewsAdminPage })));
 const AuthCallbackPage = lazy(() => import("./components/AuthCallbackPage").then(m => ({ default: m.AuthCallbackPage })));
 const NotFoundPage = lazy(() => import("./components/NotFoundPage").then(m => ({ default: m.NotFoundPage })));
 const InclusionPage = lazy(() => import("./components/InclusionPage").then(m => ({ default: m.InclusionPage })));
@@ -987,6 +990,15 @@ const App: FC = () => {
           <Route path="/gebruik/financiele-analyse-ai" element={<UseCaseFinancePage />} />
           <Route path="/vergelijken/fainl-vs-chatgpt" element={<CompareVsChatGPTPage />} />
           <Route path="/vergelijken/ai-modellen-vergelijken" element={<CompareMultiModelPage />} />
+
+          {/* AI nieuws, modelgidsen en content hubs */}
+          <Route path="/nieuws" element={<NewsPage />} />
+          <Route path="/nieuws/:slug" element={<SeoArticlePage section="nieuws" />} />
+          <Route path="/vergelijken/:slug" element={<SeoArticlePage section="vergelijken" />} />
+          <Route path="/modellen/:slug" element={<SeoArticlePage section="modellen" />} />
+          <Route path="/tutorials/:slug" element={<SeoArticlePage section="tutorials" />} />
+          <Route path="/infographics/:slug" element={<SeoArticlePage section="infographics" />} />
+          <Route path="/admin/news" element={<NewsAdminPage />} />
 
           {/* 404 */}
           <Route path="*" element={<NotFoundPage />} />
