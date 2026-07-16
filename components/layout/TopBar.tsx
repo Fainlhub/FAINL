@@ -9,7 +9,7 @@ export const TopBar: FC<TopBarProps> = ({ onMenuOpen }) => {
   return (
     <div className="mobile-topbar">
       <img
-        src="/fainllogo_new.png"
+        src="/fainllogo_new_ui.png"
         alt="FAINL"
         className="mobile-topbar-logo"
       />

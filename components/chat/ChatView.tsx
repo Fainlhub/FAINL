@@ -82,7 +82,17 @@ export const ChatView: FC = () => {
 
       {isEmpty ? (
         <div className="chathome">
+          <div className="council-kicker">FAINL High Council</div>
           <h1 className="chathome-greeting">{getGreeting()}</h1>
+          <p className="chathome-subtitle">
+            Start met een vraag die meer verdient dan een enkel modelantwoord. De Raad weegt modellen, twijfel en consensus.
+          </p>
+          <div className="council-orbit council-orbit--compact" aria-hidden="true">
+            {['G', 'AI', 'C', 'L', 'M', 'D', 'O'].map((node, index) => (
+              <span key={`${node}-${index}`} className={`council-node council-node--${index + 1}`}>{node}</span>
+            ))}
+            <span className="council-core">RAAD</span>
+          </div>
           <ChatComposer
             onSend={sendMessage}
             disabled={isStreaming}
@@ -102,7 +112,7 @@ export const ChatView: FC = () => {
           </div>
           {!authSession && (
             <p className="chat-anon-hint">
-              Gratis chatten met een model. <a href="/login?next=/">Log in</a> om gesprekken te bewaren en meerdere modellen tegelijk te kiezen.
+              Twee sessies gratis. <a href="/login?next=/">Log in</a> om conclusies te bewaren en de volledige Raad samen te stellen.
             </p>
           )}
         </div>

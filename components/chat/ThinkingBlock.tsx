@@ -29,8 +29,8 @@ export const ThinkingBlock: FC<ThinkingBlockProps> = ({ pending, traces, reviews
           : <Brain className="thinking-icon" />}
         <span className="thinking-label">
           {isRunning
-            ? `Modellen antwoorden... (${modelCount})`
-            : `${modelCount} modellen${durationMs ? ` - ${(durationMs / 1000).toFixed(1)}s` : ''}`}
+            ? `De Raad toetst je vraag... (${modelCount})`
+            : `${modelCount} modellen gewogen${durationMs ? ` - ${(durationMs / 1000).toFixed(1)}s` : ''}`}
         </span>
         {isRunning && (
           <span className="thinking-progress">
@@ -48,7 +48,7 @@ export const ThinkingBlock: FC<ThinkingBlockProps> = ({ pending, traces, reviews
         <div className="thinking-body">
           {isRunning && !traces?.length && (
             <p className="thinking-wait">
-              De geselecteerde modellen beantwoorden je vraag parallel. Hun antwoorden verschijnen hier zodra ze klaar zijn.
+              De geselecteerde modellen analyseren onafhankelijk, markeren aannames en zoeken naar consensus.
             </p>
           )}
           {traces?.map((trace, index) => (
@@ -67,7 +67,7 @@ export const ThinkingBlock: FC<ThinkingBlockProps> = ({ pending, traces, reviews
           )}
           {!!traces?.length && (
             <p className="thinking-merge-note">
-              Deze {traces.length} modelantwoorden zijn samengevoegd tot het antwoord hieronder.
+              Deze {traces.length} modelantwoorden zijn gewogen tot de conclusie hieronder.
             </p>
           )}
         </div>

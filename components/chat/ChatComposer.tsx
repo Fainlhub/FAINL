@@ -63,9 +63,9 @@ export const ChatComposer: FC<ChatComposerProps> = ({
         value={input}
         onChange={e => setInput(e.target.value.slice(0, MAX_LENGTH))}
         onKeyDown={handleKeyDown}
-        placeholder="Stel een vraag…"
+        placeholder="Leg je vraag voor aan de Raad..."
         rows={1}
-        aria-label="Stel je vraag"
+        aria-label="Stel je vraag aan de FAINL Raad"
       />
       <div className="chathome-bar">
         <ModelSelector

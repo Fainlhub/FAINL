@@ -5,12 +5,11 @@ import {
   LayoutDashboard,
   CreditCard,
   Heart,
-  Plus,
 } from 'lucide-react';
 
 const items = [
-  { path: '/', label: 'Chat', icon: MessageSquare },
-  { path: '/dashboard', label: 'Sessies', icon: LayoutDashboard },
+  { path: '/', label: 'Arena', icon: MessageSquare },
+  { path: '/dashboard', label: 'Dossier', icon: LayoutDashboard },
   { path: '/tokens', label: 'Credits', icon: CreditCard },
   { path: '/inclusie', label: 'Inclusie', icon: Heart },
 ];

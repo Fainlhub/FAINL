@@ -58,33 +58,32 @@ export const CookieConsent: FC = () => {
   return (
     <div
       role="dialog"
-      aria-modal="true"
       aria-label="Cookie toestemming"
-      className="fixed bottom-4 left-4 right-4 md:left-auto md:right-8 md:bottom-8 md:max-w-lg z-[200] animate-in slide-in-from-bottom-4 fade-in duration-500"
+      className="cookie-consent fixed bottom-3 left-3 right-3 md:left-auto md:right-8 md:bottom-8 md:max-w-lg z-[200] animate-in slide-in-from-bottom-4 fade-in duration-500"
     >
-      <div className="bg-white dark:bg-black border-4 border-black dark:border-[var(--line)] rounded-none shadow-lg dark:shadow-lg overflow-hidden">
+      <div className="cookie-consent__panel bg-white dark:bg-black border-4 border-black dark:border-[var(--line)] rounded-none shadow-lg dark:shadow-lg overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-5 pb-3">
+        <div className="cookie-consent__header flex items-center justify-between px-6 pt-5 pb-3">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-black dark:bg-[var(--action)] text-white dark:text-black">
               <Shield className="w-5 h-5" />
             </div>
-            <span className="font-black text-lg md:text-xl uppercase tracking-widest text-black dark:text-white">
+            <span className="cookie-consent__title font-black text-lg md:text-xl uppercase tracking-widest text-black dark:text-white">
               Privacy & Cookies
             </span>
           </div>
           <button
             onClick={decline}
             aria-label="Sluit en weiger cookies"
-            className="p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-colors"
+            className="cookie-consent__close p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-colors"
           >
             <X className="w-4 h-4 text-black dark:text-white/50" />
           </button>
         </div>
 
         {/* Body */}
-        <div className="px-6 pb-4">
-          <p className="text-lg md:text-xl text-black dark:text-white/80 leading-relaxed">
+        <div className="cookie-consent__body px-6 pb-4">
+          <p className="cookie-consent__text text-lg md:text-xl text-black dark:text-white/80 leading-relaxed">
             Wij gebruiken{" "}
             <strong className="text-black dark:text-white">
               noodzakelijke cookies
@@ -100,7 +99,7 @@ export const CookieConsent: FC = () => {
           {/* Expandable details */}
           <button
             onClick={() => setExpanded(!expanded)}
-            className="mt-3 flex items-center gap-1 text-lg font-black uppercase tracking-widest text-black/40 dark:text-[var(--ink)] hover:text-black transition-colors"
+            className="cookie-consent__details mt-3 flex items-center gap-1 text-lg font-black uppercase tracking-widest text-black/40 dark:text-[var(--ink)] hover:text-black transition-colors"
           >
             {expanded ? (
               <ChevronUp className="w-4 h-4" />
@@ -111,7 +110,7 @@ export const CookieConsent: FC = () => {
           </button>
 
           {expanded && (
-            <div className="mt-4 space-y-4 text-lg text-black dark:text-white/70 leading-relaxed border-t-2 border-black/10 dark:border-[var(--line)]/20 pt-4">
+            <div className="cookie-consent__expanded mt-4 space-y-4 text-lg text-black dark:text-white/70 leading-relaxed border-t-2 border-black/10 dark:border-[var(--line)]/20 pt-4">
               <div>
                 <span className="font-black text-black dark:text-white uppercase">
                   Noodzakelijk (altijd actief)
@@ -141,16 +140,16 @@ export const CookieConsent: FC = () => {
         </div>
 
         {/* Actions */}
-        <div className="flex gap-4 px-6 pb-6">
+        <div className="cookie-consent__actions flex gap-4 px-6 pb-6">
           <button
             onClick={decline}
-            className="flex-1 px-4 py-4 border-4 border-black dark:border-white/20 text-black dark:text-white font-black text-lg md:text-xl uppercase tracking-widest rounded-none hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+            className="cookie-consent__button flex-1 px-4 py-4 border-4 border-black dark:border-white/20 text-black dark:text-white font-black text-lg md:text-xl uppercase tracking-widest rounded-none hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
           >
             Noodzakelijk
           </button>
           <button
             onClick={accept}
-            className="flex-1 px-4 py-4 bg-black dark:bg-[var(--action)] text-white dark:text-black font-black text-lg md:text-xl uppercase tracking-widest rounded-none hover:bg-[var(--action)] hover:text-black dark:hover:bg-white transition-all shadow-lg"
+            className="cookie-consent__button flex-1 px-4 py-4 bg-black dark:bg-[var(--action)] text-white dark:text-black font-black text-lg md:text-xl uppercase tracking-widest rounded-none hover:bg-[var(--action)] hover:text-black dark:hover:bg-white transition-all shadow-lg"
           >
             Accepteer
           </button>

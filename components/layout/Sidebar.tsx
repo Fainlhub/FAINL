@@ -285,7 +285,7 @@ export const Sidebar: FC<SidebarProps> = ({
       {/* Logo */}
       <button className="sidebar-logo" onClick={() => go(() => navigate('/'))} aria-label="FAINL — naar startpagina">
         <img
-          src="/fainllogo_new.png"
+          src="/fainllogo_new_ui.png"
           alt="FAINL"
           className="sidebar-logo-video"
         />

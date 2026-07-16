@@ -70,7 +70,7 @@ import { useAuth } from "./contexts/AuthContext";
 
 const LogoSwitch: FC = () => (
   <img
-    src="/fainllogo_new.png"
+    src="/fainllogo_new_ui.png"
     alt="FAINL"
     className="h-14 sm:h-16 md:h-20 w-auto max-w-[180px] sm:max-w-[240px] object-contain"
   />
@@ -456,8 +456,6 @@ const App: FC = () => {
     return () => clearTimeout(t);
   }, [session]);
 
-  const [isInputFocused, setIsInputFocused] = useState(false);
-
   const startSession = async (queryInput: string) => {
     const allMembers = config.activeCouncil;
     const readyMembers = councilService.current.getReadyMembers(allMembers);
@@ -840,9 +838,6 @@ const App: FC = () => {
                       input={input}
                       onInputChange={setInput}
                       onSubmit={() => handleStart()}
-                      isInputFocused={isInputFocused}
-                      onFocus={() => setIsInputFocused(true)}
-                      onBlur={() => setIsInputFocused(false)}
                     />
                   ) : (
                     session.stage !== WorkflowStage.ERROR && (
