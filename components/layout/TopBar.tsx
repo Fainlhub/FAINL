@@ -8,9 +8,9 @@ interface TopBarProps {
 export const TopBar: FC<TopBarProps> = ({ onMenuOpen }) => {
   return (
     <div className="mobile-topbar">
-      <video
-        src="/FAINLANI.mp4"
-        autoPlay muted loop playsInline
+      <img
+        src="/fainllogo_new.png"
+        alt="FAINL"
         className="mobile-topbar-logo"
       />
       {onMenuOpen && (

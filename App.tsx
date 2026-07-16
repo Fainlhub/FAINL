@@ -69,13 +69,9 @@ import { useAuth } from "./contexts/AuthContext";
 // JourneyStepper) have been extracted to components/mission/
 
 const LogoSwitch: FC = () => (
-  <video
-    src="/FAINLANI.mp4"
-    autoPlay
-    muted
-    loop
-    playsInline
-    aria-label="FAINL logo animatie"
+  <img
+    src="/fainllogo_new.png"
+    alt="FAINL"
     className="h-14 sm:h-16 md:h-20 w-auto max-w-[180px] sm:max-w-[240px] object-contain"
   />
 );
