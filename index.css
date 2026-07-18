@@ -3465,11 +3465,11 @@ html.dark {
   --surface: #F6F6F1;
   --surface-2: #F6F6F1;
   --surface-3: #F6F6F1;
-  --sidebar: #F6F6F1;
-  --sidebar-2: #E8E8E2;
+  --sidebar: #E8E8E2;
+  --sidebar-2: #DEDED8;
   --sidebar-text: #03002F;
   --sidebar-muted: #03002F;
-  --sidebar-line: #E8E8E2;
+  --sidebar-line: #D6D6D0;
   --ink: #03002F;
   --ink-2: #03002F;
   --ink-3: #03002F;
@@ -3741,6 +3741,23 @@ html.dark {
   .login-gate-logo {
     background: #E8E8E2 !important;
     color: #03002F !important;
+  }
+
+  .sidebar {
+    background: #E8E8E2 !important;
+    background-color: #E8E8E2 !important;
+    border-color: #D6D6D0 !important;
+  }
+
+  .sidebar-link:hover,
+  .sidebar-link.active,
+  .btn-new-chat:hover,
+  .sidebar-history-item:hover,
+  .flyout-btn:hover,
+  .flyout-btn.active,
+  .flyout-item:hover {
+    background: #DEDED8 !important;
+    background-color: #DEDED8 !important;
   }
 }
 .incl-page__code-input:focus { border-color: var(--ink-3); }

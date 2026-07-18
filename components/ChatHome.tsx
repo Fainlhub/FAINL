@@ -1,6 +1,5 @@
 import { FC, useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { ArrowUp, CheckCircle2, Network, ShieldCheck } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { ArrowUp } from 'lucide-react';
 
 interface ChatHomeProps {
   input: string;
@@ -28,12 +27,6 @@ const EXAMPLE_QUESTIONS = [
   'Hoe bescherm ik mijn startup tegen kopieergedrag?',
 ];
 
-const COUNCIL_SIGNALS = [
-  { label: '7 AI-modellen', detail: 'onafhankelijk gewogen', icon: Network },
-  { label: 'Debat & consensus', detail: 'aannames getoetst', icon: CheckCircle2 },
-  { label: 'Gefundeerde conclusie', detail: 'besluitklaar advies', icon: ShieldCheck },
-];
-
 const pickRandom = (arr: string[], n: number): string[] => {
   const shuffled = [...arr].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, n);
@@ -44,18 +37,8 @@ export const ChatHome: FC<ChatHomeProps> = ({
   onInputChange,
   onSubmit,
 }) => {
-  const { authSession } = useAuth();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const chips = useMemo(() => pickRandom(EXAMPLE_QUESTIONS, 3), []);
-
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    const base = hour < 12 ? 'Goedemorgen' : hour < 18 ? 'Goedemiddag' : 'Goedenavond';
-    const name =
-      authSession?.user?.user_metadata?.name?.split(' ')[0] ||
-      authSession?.user?.user_metadata?.full_name?.split(' ')[0];
-    return name ? `${base}, ${name}.` : `${base}.`;
-  };
 
   const autoResize = useCallback(() => {
     const el = textareaRef.current;
@@ -77,19 +60,6 @@ export const ChatHome: FC<ChatHomeProps> = ({
 
   return (
     <div className="chathome">
-      <div className="council-kicker">Hogere Raad actief</div>
-      <h1 className="chathome-greeting">{getGreeting()}</h1>
-      <p className="chathome-subtitle">
-        Leg je vraag voor aan meerdere AI-modellen. FAINL toetst aannames, weegt twijfel en vormt een gefundeerde conclusie.
-      </p>
-
-      <div className="council-orbit" aria-hidden="true">
-        {['G', 'AI', 'C', 'L', 'M', 'D', 'O'].map((node, index) => (
-          <span key={`${node}-${index}`} className={`council-node council-node--${index + 1}`}>{node}</span>
-        ))}
-        <span className="council-core">FAINL</span>
-      </div>
-
       <div className="chathome-input-card">
         <textarea
           ref={textareaRef}
@@ -129,15 +99,6 @@ export const ChatHome: FC<ChatHomeProps> = ({
         ))}
       </div>
 
-      <div className="council-signals" aria-label="FAINL werkwijze">
-        {COUNCIL_SIGNALS.map(({ label, detail, icon: Icon }) => (
-          <div key={label} className="council-signal">
-            <Icon />
-            <span>{label}</span>
-            <small>{detail}</small>
-          </div>
-        ))}
-      </div>
     </div>
   );
 };

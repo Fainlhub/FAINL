@@ -19,6 +19,12 @@ export default defineConfig(() => ({
   server: {
     port: 3000,
     host: '127.0.0.1',
+    allowedHosts: [
+      'localhost',
+      '127.0.0.1',
+      '192.168.2.58',
+      'little-bags-travel.loca.lt',
+    ],
     headers: {
       'Cache-Control': 'no-store',
     },

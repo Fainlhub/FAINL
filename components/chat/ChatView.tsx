@@ -48,15 +48,6 @@ export const ChatView: FC = () => {
     if (threadId && threadId !== activeThreadId) openThread(threadId);
   }, [threadId, activeThreadId, openThread]);
 
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    const base = hour < 12 ? 'Goedemorgen' : hour < 18 ? 'Goedemiddag' : 'Goedenavond';
-    const name =
-      authSession?.user?.user_metadata?.name?.split(' ')[0] ||
-      authSession?.user?.user_metadata?.full_name?.split(' ')[0];
-    return name ? `${base}, ${name}.` : `${base}.`;
-  };
-
   const handlePurchase = async (count: number) => {
     if (!authSession?.user?.id) {
       navigate('/login?next=/tokens');
@@ -82,17 +73,6 @@ export const ChatView: FC = () => {
 
       {isEmpty ? (
         <div className="chathome">
-          <div className="council-kicker">FAINL High Council</div>
-          <h1 className="chathome-greeting">{getGreeting()}</h1>
-          <p className="chathome-subtitle">
-            Start met een vraag die meer verdient dan een enkel modelantwoord. De Raad weegt modellen, twijfel en consensus.
-          </p>
-          <div className="council-orbit council-orbit--compact" aria-hidden="true">
-            {['G', 'AI', 'C', 'L', 'M', 'D', 'O'].map((node, index) => (
-              <span key={`${node}-${index}`} className={`council-node council-node--${index + 1}`}>{node}</span>
-            ))}
-            <span className="council-core">RAAD</span>
-          </div>
           <ChatComposer
             onSend={sendMessage}
             disabled={isStreaming}
