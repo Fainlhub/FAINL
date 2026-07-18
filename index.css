@@ -93,7 +93,7 @@ html.dark {
   --card-border: rgba(255,255,255,0.08);
   --card-shadow: 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
   --card-shadow-h: 0 4px 12px rgba(0,0,0,0.5), 0 2px 4px rgba(0,0,0,0.3);
-  --input-bg: #4A4A4A;
+  --input-bg: #d8d8d859;
   --input-border: rgba(255,255,255,0.1);
   --placeholder: rgba(255,255,255,0.3);
 }
@@ -112,7 +112,7 @@ html.dark {
   }
 
   body {
-    background: var(--canvas);
+    background: #d8d8d859;
     color: var(--ink);
     font-family: var(--f-ui);
     -webkit-font-smoothing: antialiased;
@@ -150,7 +150,7 @@ html.dark {
    APP SHELL — Sidebar + Main Canvas
    ═══════════════════════════════════════════════════════════════════════════ */
 .app-shell {
-  background: var(--canvas);
+  background: #dfdede4b;
   min-height: 100dvh;
   display: flex;
 }
@@ -158,7 +158,7 @@ html.dark {
 /* ── Sidebar ──────────────────────────────────────────────────────────────── */
 .sidebar {
   width: var(--sb-w);
-  background: var(--sidebar);
+  background: #7575759c;
   position: fixed;
   top: 0;
   bottom: 0;
@@ -264,8 +264,8 @@ body.sidebar-resizing * {
   height: 28px;
   border-radius: 50%;
   border: 1px solid var(--sidebar-line);
-  background: var(--sidebar);
-  color: #999;
+  background: #7575759c;
+  color: #d8d8d859;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -346,7 +346,7 @@ body.sidebar-resizing * {
   width: calc(100% - 16px);
   margin: 12px 8px 4px;
   padding: 9px 12px;
-  background: var(--sidebar-2);
+  background: #7575759c;
   border: 1px solid var(--sidebar-line);
   border-radius: var(--r-sm);
   color: #fff;
@@ -3457,56 +3457,56 @@ h1, h2, h3, h4, h5, h6 {
 .incl-page__input-row { display: flex; gap: 8px; }
 .incl-page__code-input { flex: 1; padding: 10px 14px; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: var(--r-md); font-family: var(--f-mono); font-size: 14px; letter-spacing: 0.05em; color: var(--ink); outline: none; transition: border-color 0.15s; }
 
-/* Global FAINL color reset requested 2026-07-17.
+/* Global FAINL color reset requested 2026-07-18.
    This block intentionally comes last to overrule legacy dark, brutalist, and landing-page color utilities. */
 :root,
 html.dark {
-  --canvas: #7E7E7E;
-  --surface: #7E7E7E;
-  --surface-2: #7E7E7E;
-  --surface-3: #7E7E7E;
-  --sidebar: #7E7E7E;
-  --sidebar-2: #1A556F;
+  --canvas: #F6F6F1;
+  --surface: #F6F6F1;
+  --surface-2: #F6F6F1;
+  --surface-3: #F6F6F1;
+  --sidebar: #F6F6F1;
+  --sidebar-2: #E8E8E2;
   --sidebar-text: #03002F;
   --sidebar-muted: #03002F;
-  --sidebar-line: #163441;
+  --sidebar-line: #E8E8E2;
   --ink: #03002F;
   --ink-2: #03002F;
   --ink-3: #03002F;
   --ink-4: #03002F;
-  --line: #163441;
-  --line-2: #1A556F;
-  --action: #1A556F;
+  --line: #E8E8E2;
+  --line-2: #E8E8E2;
+  --action: #F6F6F1;
   --action-text: #03002F;
-  --action-hover: #163441;
-  --card-bg: #7E7E7E;
-  --card-border: #163441;
+  --action-hover: #E8E8E2;
+  --card-bg: #F6F6F1;
+  --card-border: #E8E8E2;
   --card-shadow: none;
   --card-shadow-h: none;
-  --input-bg: #7E7E7E;
-  --input-border: #163441;
+  --input-bg: #F6F6F1;
+  --input-border: #E8E8E2;
   --placeholder: #03002F;
-  --ok: #1A556F;
-  --warn: #163441;
-  --err: #163441;
-  --color-accent: #1A556F;
-  --color-primary: #1A556F;
-  --color-primary-dark: #163441;
+  --ok: #E8E8E2;
+  --warn: #E8E8E2;
+  --err: #E8E8E2;
+  --color-accent: #E8E8E2;
+  --color-primary: #E8E8E2;
+  --color-primary-dark: #E8E8E2;
   --color-lemon-primary: #03002F;
   --color-lemon-light: #03002F;
   --color-lemon-dark: #03002F;
-  --metal-highlight: #1A556F;
-  --accent-warm: #163441;
-  --status-active: #1A556F;
-  --glass-bg: #7E7E7E;
-  --glass-border: #163441;
+  --metal-highlight: #E8E8E2;
+  --accent-warm: #E8E8E2;
+  --status-active: #E8E8E2;
+  --glass-bg: #F6F6F1;
+  --glass-border: #E8E8E2;
 }
 
 @layer base {
   html,
   body,
   #root {
-    background: #7E7E7E !important;
+    background: #F6F6F1 !important;
     color: #03002F !important;
   }
 
@@ -3535,7 +3535,7 @@ html.dark {
   }
 
   ::selection {
-    background: #1A556F !important;
+    background: #E8E8E2 !important;
     color: #03002F !important;
   }
 }
@@ -3589,8 +3589,8 @@ html.dark {
   [class*="via-"],
   [class*="to-"],
   [class*="dark:bg-"] {
-    background: #7E7E7E !important;
-    background-color: #7E7E7E !important;
+    background: #F6F6F1 !important;
+    background-color: #F6F6F1 !important;
     background-image: none !important;
   }
 
@@ -3621,11 +3621,11 @@ html.dark {
   button[class*="bg-["],
   a[class*="bg-black"],
   a[class*="bg-["] {
-    background: #1A556F !important;
-    background-color: #1A556F !important;
+    background: #F6F6F1 !important;
+    background-color: #F6F6F1 !important;
     background-image: none !important;
     color: #03002F !important;
-    border-color: #163441 !important;
+    border-color: #E8E8E2 !important;
   }
 
   .btn-primary:hover,
@@ -3638,8 +3638,8 @@ html.dark {
   .login-gate-submit:hover:not(:disabled),
   button[class*="hover:bg-"]:hover,
   a[class*="hover:bg-"]:hover {
-    background: #163441 !important;
-    background-color: #163441 !important;
+    background: #E8E8E2 !important;
+    background-color: #E8E8E2 !important;
     background-image: none !important;
     color: #03002F !important;
   }
@@ -3675,7 +3675,7 @@ html.dark {
   [class*="border-red-"],
   [class*="border-purple-"],
   [class*="dark:border-"] {
-    border-color: #163441 !important;
+    border-color: #E8E8E2 !important;
   }
 
   .main-canvas::before,
@@ -3683,7 +3683,7 @@ html.dark {
   .council-orbit::before,
   .council-orbit::after {
     background: none !important;
-    border-color: #163441 !important;
+    border-color: #E8E8E2 !important;
     opacity: 1 !important;
   }
 
@@ -3701,10 +3701,10 @@ html.dark {
   .completion-actions__button,
   .council-card,
   .incl-page__warning {
-    background: #7E7E7E !important;
-    background-color: #7E7E7E !important;
+    background: #F6F6F1 !important;
+    background-color: #F6F6F1 !important;
     background-image: none !important;
-    border-color: #163441 !important;
+    border-color: #E8E8E2 !important;
     box-shadow: none !important;
     color: #03002F !important;
   }
@@ -3713,8 +3713,8 @@ html.dark {
   .panel-backdrop,
   .cookie-backdrop,
   [class*="backdrop"] {
-    background: #7E7E7E !important;
-    background-color: #7E7E7E !important;
+    background: #F6F6F1 !important;
+    background-color: #F6F6F1 !important;
   }
 
   .landing-council-title,
@@ -3739,7 +3739,7 @@ html.dark {
   .page-kicker,
   .incl-page__icon,
   .login-gate-logo {
-    background: #1A556F !important;
+    background: #E8E8E2 !important;
     color: #03002F !important;
   }
 }

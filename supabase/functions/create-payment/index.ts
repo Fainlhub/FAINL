@@ -12,7 +12,10 @@ const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
 const SITE_URL = Deno.env.get("SITE_URL") || "https://www.fainl.com";
 
 const allowedOrigins = new Set(
-  (Deno.env.get("ALLOWED_ORIGINS") || "https://fainl.com,https://www.fainl.com,http://localhost:3000")
+  (
+    Deno.env.get("ALLOWED_ORIGINS") ||
+    "https://fainl.com,https://www.fainl.com,http://localhost:3000,http://localhost:3001,http://localhost:4173,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:3001,http://127.0.0.1:4173,http://127.0.0.1:5173"
+  )
     .split(",")
     .map((origin) => origin.trim())
     .filter(Boolean)
