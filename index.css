@@ -3456,6 +3456,293 @@ h1, h2, h3, h4, h5, h6 {
 
 .incl-page__input-row { display: flex; gap: 8px; }
 .incl-page__code-input { flex: 1; padding: 10px 14px; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: var(--r-md); font-family: var(--f-mono); font-size: 14px; letter-spacing: 0.05em; color: var(--ink); outline: none; transition: border-color 0.15s; }
+
+/* Global FAINL color reset requested 2026-07-17.
+   This block intentionally comes last to overrule legacy dark, brutalist, and landing-page color utilities. */
+:root,
+html.dark {
+  --canvas: #7E7E7E;
+  --surface: #7E7E7E;
+  --surface-2: #7E7E7E;
+  --surface-3: #7E7E7E;
+  --sidebar: #7E7E7E;
+  --sidebar-2: #1A556F;
+  --sidebar-text: #03002F;
+  --sidebar-muted: #03002F;
+  --sidebar-line: #163441;
+  --ink: #03002F;
+  --ink-2: #03002F;
+  --ink-3: #03002F;
+  --ink-4: #03002F;
+  --line: #163441;
+  --line-2: #1A556F;
+  --action: #1A556F;
+  --action-text: #03002F;
+  --action-hover: #163441;
+  --card-bg: #7E7E7E;
+  --card-border: #163441;
+  --card-shadow: none;
+  --card-shadow-h: none;
+  --input-bg: #7E7E7E;
+  --input-border: #163441;
+  --placeholder: #03002F;
+  --ok: #1A556F;
+  --warn: #163441;
+  --err: #163441;
+  --color-accent: #1A556F;
+  --color-primary: #1A556F;
+  --color-primary-dark: #163441;
+  --color-lemon-primary: #03002F;
+  --color-lemon-light: #03002F;
+  --color-lemon-dark: #03002F;
+  --metal-highlight: #1A556F;
+  --accent-warm: #163441;
+  --status-active: #1A556F;
+  --glass-bg: #7E7E7E;
+  --glass-border: #163441;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    background: #7E7E7E !important;
+    color: #03002F !important;
+  }
+
+  body,
+  body * {
+    color: #03002F;
+  }
+
+  body *,
+  body *::before,
+  body *::after {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  h1, h2, h3, h4, h5, h6,
+  p, span, small, strong, em, label, li, dt, dd,
+  input, textarea, select, button, a, code, pre {
+    color: #03002F;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: #03002F !important;
+    opacity: 0.7;
+  }
+
+  ::selection {
+    background: #1A556F !important;
+    color: #03002F !important;
+  }
+}
+
+@layer utilities {
+  .app-shell,
+  .main-canvas,
+  .main-content,
+  .sidebar,
+  .mobile-topbar,
+  .mobile-nav,
+  .card-fainl,
+  .chathome,
+  .chatview,
+  .chat-bubble,
+  .chat-bubble--user,
+  .chat-bubble--assistant,
+  .chatview-composer-wrap,
+  .chathome-input-card,
+  .thinking-block,
+  .panel-drawer,
+  .model-menu,
+  .tier-menu,
+  .thread-menu,
+  .flyout-menu,
+  .paywall-modal,
+  .cookie-card,
+  .login-gate-card,
+  .incl-page,
+  .incl-page__stat,
+  .incl-page__success,
+  .incl-page__form-card,
+  .landing-council-hero,
+  .landing-council-hero .bg-white,
+  .landing-council-hero .bg-black,
+  .landing-council-hero [class*="bg-"],
+  [class*="bg-white"],
+  [class*="bg-black"],
+  [class*="bg-zinc-"],
+  [class*="bg-slate-"],
+  [class*="bg-gray-"],
+  [class*="bg-neutral-"],
+  [class*="bg-amber-"],
+  [class*="bg-blue-"],
+  [class*="bg-green-"],
+  [class*="bg-red-"],
+  [class*="bg-purple-"],
+  [class*="bg-["],
+  [class*="bg-gradient"],
+  [class*="from-"],
+  [class*="via-"],
+  [class*="to-"],
+  [class*="dark:bg-"] {
+    background: #7E7E7E !important;
+    background-color: #7E7E7E !important;
+    background-image: none !important;
+  }
+
+  .btn-primary,
+  .btn-send,
+  .chathome-send,
+  .btn-new-chat,
+  .gold-material-btn,
+  .paywall-button,
+  .cookie-btn--primary,
+  .login-gate-submit,
+  .sidebar-link:hover,
+  .sidebar-link.active,
+  .mobile-nav-item.active,
+  .mobile-topbar-btn:hover,
+  .flyout-btn:hover,
+  .flyout-btn.active,
+  .flyout-item:hover,
+  .tier-option:hover:not(.locked),
+  .tier-option.selected,
+  .model-option:hover:not(.locked),
+  .model-option.selected,
+  .chat-verify-btn:hover,
+  .btn-ghost:hover,
+  .designs-theme-option:hover,
+  .designs-theme-option.selected,
+  button[class*="bg-black"],
+  button[class*="bg-["],
+  a[class*="bg-black"],
+  a[class*="bg-["] {
+    background: #1A556F !important;
+    background-color: #1A556F !important;
+    background-image: none !important;
+    color: #03002F !important;
+    border-color: #163441 !important;
+  }
+
+  .btn-primary:hover,
+  .btn-send:hover:not(:disabled),
+  .chathome-send:hover:not(:disabled),
+  .btn-new-chat:hover,
+  .gold-material-btn:hover,
+  .paywall-button:hover,
+  .cookie-btn--primary:hover,
+  .login-gate-submit:hover:not(:disabled),
+  button[class*="hover:bg-"]:hover,
+  a[class*="hover:bg-"]:hover {
+    background: #163441 !important;
+    background-color: #163441 !important;
+    background-image: none !important;
+    color: #03002F !important;
+  }
+
+  [class*="text-white"],
+  [class*="text-black"],
+  [class*="text-zinc-"],
+  [class*="text-slate-"],
+  [class*="text-gray-"],
+  [class*="text-neutral-"],
+  [class*="text-amber-"],
+  [class*="text-blue-"],
+  [class*="text-green-"],
+  [class*="text-red-"],
+  [class*="text-purple-"],
+  [class*="dark:text-"],
+  [class*="hover:text-"]:hover,
+  svg,
+  svg * {
+    color: #03002F !important;
+    stroke: currentColor;
+  }
+
+  [class*="border-white"],
+  [class*="border-black"],
+  [class*="border-zinc-"],
+  [class*="border-slate-"],
+  [class*="border-gray-"],
+  [class*="border-neutral-"],
+  [class*="border-amber-"],
+  [class*="border-blue-"],
+  [class*="border-green-"],
+  [class*="border-red-"],
+  [class*="border-purple-"],
+  [class*="dark:border-"] {
+    border-color: #163441 !important;
+  }
+
+  .main-canvas::before,
+  .landing-council-hero::before,
+  .council-orbit::before,
+  .council-orbit::after {
+    background: none !important;
+    border-color: #163441 !important;
+    opacity: 1 !important;
+  }
+
+  .council-orbit,
+  .council-node,
+  .council-core,
+  .council-signal,
+  .node-card,
+  .faq-item,
+  .paywall-card,
+  .cookie-icon-wrap,
+  .login-gate-destination,
+  .login-gate-social-btn,
+  .login-gate-input,
+  .completion-actions__button,
+  .council-card,
+  .incl-page__warning {
+    background: #7E7E7E !important;
+    background-color: #7E7E7E !important;
+    background-image: none !important;
+    border-color: #163441 !important;
+    box-shadow: none !important;
+    color: #03002F !important;
+  }
+
+  .login-gate-backdrop,
+  .panel-backdrop,
+  .cookie-backdrop,
+  [class*="backdrop"] {
+    background: #7E7E7E !important;
+    background-color: #7E7E7E !important;
+  }
+
+  .landing-council-title,
+  .landing-council-title span,
+  .landing-council-title .text-\[var\(--ink\)\],
+  .council-kicker,
+  .landing-council-eyebrow,
+  .chathome-greeting,
+  .chathome-subtitle,
+  .chathome-chip,
+  .council-signal svg,
+  .thinking-dot.done,
+  .sidebar-logo-text,
+  .user-display-name,
+  .user-subtitle {
+    color: #03002F !important;
+    text-shadow: none !important;
+  }
+
+  .thinking-dot.done,
+  .council-card__badge,
+  .page-kicker,
+  .incl-page__icon,
+  .login-gate-logo {
+    background: #1A556F !important;
+    color: #03002F !important;
+  }
+}
 .incl-page__code-input:focus { border-color: var(--ink-3); }
 .incl-page__code-input:focus-visible { box-shadow: 0 0 0 2px var(--canvas), 0 0 0 4px var(--action); }
 
