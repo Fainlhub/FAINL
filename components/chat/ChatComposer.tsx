@@ -2,6 +2,7 @@ import { FC, useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowUp } from 'lucide-react';
 import { CouncilMember } from '../../types';
 import { ModelSelector } from './ModelSelector';
+import { ImageCouncilModeSwitch } from '../image-council/ImageCouncilModeSwitch';
 
 interface ChatComposerProps {
   onSend: (content: string) => void;
@@ -56,37 +57,40 @@ export const ChatComposer: FC<ChatComposerProps> = ({
   };
 
   return (
-    <div className="chathome-input-card chat-composer">
-      <textarea
-        ref={textareaRef}
-        className="chathome-textarea"
-        value={input}
-        onChange={e => setInput(e.target.value.slice(0, MAX_LENGTH))}
-        onKeyDown={handleKeyDown}
-        placeholder="Leg je vraag voor aan de Raad..."
-        rows={1}
-        aria-label="Stel je vraag aan de FAINL Raad"
-      />
-      <div className="chathome-bar">
-        <ModelSelector
-          models={models}
-          selectedIds={selectedModelIds}
-          onChange={onModelSelectionChange}
-          isLoggedIn={isLoggedIn}
-          byokEnabled={byokEnabled}
-          disabled={disabled}
+    <div className="chat-composer-stack">
+      <ImageCouncilModeSwitch />
+      <div className="chathome-input-card chat-composer">
+        <textarea
+          ref={textareaRef}
+          className="chathome-textarea"
+          value={input}
+          onChange={e => setInput(e.target.value.slice(0, MAX_LENGTH))}
+          onKeyDown={handleKeyDown}
+          placeholder="Leg je vraag voor aan de Raad..."
+          rows={1}
+          aria-label="Stel je vraag aan de FAINL Raad"
         />
-        {input.length > 0 && (
-          <span className="chathome-counter">{input.length}/{MAX_LENGTH}</span>
-        )}
-        <button
-          className="chathome-send"
-          onClick={submit}
-          disabled={!input.trim() || disabled}
-          aria-label="Verstuur"
-        >
-          <ArrowUp className="w-4 h-4" />
-        </button>
+        <div className="chathome-bar">
+          <ModelSelector
+            models={models}
+            selectedIds={selectedModelIds}
+            onChange={onModelSelectionChange}
+            isLoggedIn={isLoggedIn}
+            byokEnabled={byokEnabled}
+            disabled={disabled}
+          />
+          {input.length > 0 && (
+            <span className="chathome-counter">{input.length}/{MAX_LENGTH}</span>
+          )}
+          <button
+            className="chathome-send"
+            onClick={submit}
+            disabled={!input.trim() || disabled}
+            aria-label="Verstuur"
+          >
+            <ArrowUp className="w-4 h-4" />
+          </button>
+        </div>
       </div>
     </div>
   );

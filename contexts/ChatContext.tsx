@@ -27,6 +27,7 @@ import {
   DEFAULT_CHAIRMAN,
   CHAT_MODEL_OPTIONS,
   DEFAULT_CHAT_MODEL_IDS,
+  CHAT_TIERS,
 } from "../constants";
 import * as chatDb from "../services/chatService";
 import { getByokKeys, byokKeyFor } from "../services/byokService";
@@ -277,7 +278,7 @@ export const ChatProvider: FC<{ children: ReactNode }> = ({ children }) => {
     if (!selectedMembers.length) selectedMembers = [CHAT_MODEL_OPTIONS[0]];
     const effectiveTier = legacyTierForModelCount(selectedMembers.length);
     const byok = byokAllowed && byokEnabled && Object.keys(getByokKeys()).length > 0;
-    const cost = byok || !userId ? 0 : selectedMembers.length;
+    const cost = byok || !userId ? 0 : CHAT_TIERS[effectiveTier].credits;
 
     // 1. Affordability, before anything is sent or stored.
     if (cost > 0) {

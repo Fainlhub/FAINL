@@ -28,12 +28,14 @@ import {
   Palette,
   Puzzle,
   Newspaper,
+  Images,
 } from 'lucide-react';
 import { useChat } from '../../contexts/ChatContext';
 import { ChatThread } from '../../types';
 import { NodeConfigPanel } from '../chat/NodeConfigPanel';
 import { DesignsPanel } from '../chat/DesignsPanel';
 import { ThemePref } from './theme';
+import { ImageCouncilSidebarSection } from '../image-council/ImageCouncilSidebarSection';
 
 interface SidebarProps {
   collapsed: boolean;
@@ -297,6 +299,15 @@ export const Sidebar: FC<SidebarProps> = ({
         <span>Nieuwe chat</span>
       </button>
 
+      <button
+        className={`sidebar-link${location.pathname.startsWith('/beeldraad') ? ' active' : ''}`}
+        onClick={() => go(() => navigate('/beeldraad'))}
+        aria-current={location.pathname.startsWith('/beeldraad') ? 'page' : undefined}
+      >
+        <Images />
+        <span>Beeldraad</span>
+      </button>
+
       {/* Search */}
       <div className="sidebar-search">
         <Search className="sidebar-search-icon" />
@@ -318,6 +329,8 @@ export const Sidebar: FC<SidebarProps> = ({
 
         {isLoggedIn && (
           <>
+            <ImageCouncilSidebarSection onNavigate={onNavigate} />
+
             {/* Pinned */}
             {pinned.length > 0 && (
               <div className="sidebar-section">

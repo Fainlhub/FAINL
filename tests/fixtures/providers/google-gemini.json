@@ -1,0 +1,27 @@
+{
+  "responseId": "google-fixture-request",
+  "modelVersion": "gemini-3.1-flash-image",
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "fixture output"
+          },
+          {
+            "inlineData": {
+              "mimeType": "image/png",
+              "data": "AQID"
+            }
+          }
+        ]
+      },
+      "safetyRatings": [
+        {
+          "category": "fixture",
+          "blocked": false
+        }
+      ]
+    }
+  ]
+}

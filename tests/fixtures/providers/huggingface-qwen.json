@@ -1,0 +1,8 @@
+{
+  "requestId": "huggingface-qwen-fixture-request",
+  "model": "Qwen/Qwen-Image",
+  "image": {
+    "mimeType": "image/webp",
+    "base64": "AQID"
+  }
+}

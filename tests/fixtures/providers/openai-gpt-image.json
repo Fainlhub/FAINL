@@ -1,0 +1,10 @@
+{
+  "id": "openai-fixture-request",
+  "model": "gpt-image-2",
+  "data": [
+    {
+      "mime_type": "image/jpeg",
+      "b64_json": "AQID"
+    }
+  ]
+}

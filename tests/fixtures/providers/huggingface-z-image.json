@@ -1,0 +1,8 @@
+{
+  "requestId": "huggingface-z-image-fixture-request",
+  "model": "Tongyi-MAI/Z-Image-Turbo",
+  "image": {
+    "mimeType": "image/png",
+    "base64": "AQID"
+  }
+}

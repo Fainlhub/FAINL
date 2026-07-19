@@ -1,0 +1,8 @@
+{
+  "requestId": "huggingface-sdxl-fixture-request",
+  "model": "stabilityai/stable-diffusion-xl-base-1.0",
+  "image": {
+    "mimeType": "image/jpeg",
+    "base64": "AQID"
+  }
+}

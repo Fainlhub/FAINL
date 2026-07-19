@@ -56,6 +56,11 @@ export const PricingPage: FC<PricingPageProps> = ({
             ? 'Betaal per credit of kies een maandelijks abonnement voor onbeperkte mogelijkheden.'
             : 'Pay per credit or choose a monthly subscription for unlimited possibilities.'}
         </p>
+        <p className="max-w-2xl mx-auto mt-5 text-sm md:text-base font-bold text-black/60 dark:text-white/60">
+          Beeldraad reserveert maximaal 9 credits per run. Je betaalt alleen voor
+          succesvol geleverde modelbranches, de afgeronde Raad en geslaagde
+          finalist-polishes; ongebruikte credits worden automatisch teruggestort.
+        </p>
       </div>
 
       {/* One-time credits */}

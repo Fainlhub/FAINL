@@ -67,6 +67,12 @@ export const AiTermsPage: FC = () => {
           <h2>Beschikbaarheid van modellen</h2>
           <p>FAINL mag onderliggende modellen, modelcombinaties, providers, prompts, orkestratie en drempelwaarden op ieder moment aanpassen. Gebruiker heeft geen aanspraak op een specifiek model of een identieke uitkomst bij herhaalde invoer.</p>
 
+          <h2>Beeldraad</h2>
+          <p>Beeldraad verwerkt een tekstprompt via meerdere beeldmodellen en multimodale beoordelaars. De Raad adviseert en rangschikt, maar de Gebruiker blijft verantwoordelijk voor de uiteindelijke selectie, controle en het gebruik van een beeld.</p>
+          <p>Een standaardrun reserveert vooraf maximaal negen credits. Alleen succesvol geleverde branchbundels, de afgeronde raad- en rangschikkingsbundel en succesvol geleverde finalist-polishes worden afgerekend. Ongebruikte, mislukte of na annulering niet uitgevoerde onderdelen worden automatisch teruggestort.</p>
+          <p>Originelen, critiques, tussenversies, finalisten en rangschikkingen blijven prive opgeslagen totdat de Gebruiker het project verwijdert. Verwijdering start een technische purge van databasegegevens, originelen, thumbnails en afgeleiden, die uiterlijk binnen 24 uur wordt afgerond.</p>
+          <p>FAINL kan beeldprompts en gegenereerde beelden voor veiligheidscontrole verwerken en kan verboden output blokkeren of in quarantaine plaatsen. Referentiebeelden en eigen API-sleutels voor beeldgeneratie worden in versie 1 niet ondersteund.</p>
+
           <h2>Thinking-niveaus en creditkosten</h2>
           <p>De chatfunctie kent oplopende thinking-niveaus. Per niveau werken meer AI-nodes op de achtergrond samen aan één antwoord; de creditkosten per antwoord stijgen mee:</p>
           <ul>
@@ -89,6 +95,7 @@ export const AiTermsPage: FC = () => {
             <li>bij gebruik van eigen sleutels worden geen credits afgeschreven;</li>
             <li>FAINL is niet aansprakelijk voor schade die voortvloeit uit het gebruik, verlies of misbruik van eigen sleutels van Gebruiker, behoudens opzet of bewuste roekeloosheid van FAINL.</li>
           </ul>
+          <p>BYOK geldt in versie 1 niet voor Beeldraad. Beeldruns zijn achtergrondtaken en gebruiken uitsluitend door FAINL beheerde providerkoppelingen, moderatie en creditafrekening.</p>
 
           <h2>Rechten op Output</h2>
           <p>Voor zover wettelijk mogelijk en behoudens rechten van derden mag Gebruiker de rechtmatig verkregen Output gebruiken voor eigen interne of overeengekomen bedrijfsdoeleinden. Het is Gebruiker niet toegestaan Output zodanig te gebruiken dat daarmee de Dienst, de onderliggende logica of een concurrerend product wordt nagebootst.</p>

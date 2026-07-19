@@ -5,6 +5,7 @@ import "./index.css";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ChatProvider } from "./contexts/ChatContext";
+import { ImageCouncilProvider } from "./contexts/ImageCouncilContext";
 
 import { BrowserRouter } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
@@ -24,9 +25,11 @@ root.render(
         <LanguageProvider>
           <AuthProvider>
             <ChatProvider>
-              <App />
-              <Analytics />
-              <SpeedInsights />
+              <ImageCouncilProvider>
+                <App />
+                <Analytics />
+                <SpeedInsights />
+              </ImageCouncilProvider>
             </ChatProvider>
           </AuthProvider>
         </LanguageProvider>

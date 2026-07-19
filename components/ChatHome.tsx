@@ -1,5 +1,6 @@
 import { FC, useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { ArrowUp } from 'lucide-react';
+import { ImageCouncilModeSwitch } from './image-council/ImageCouncilModeSwitch';
 
 interface ChatHomeProps {
   input: string;
@@ -60,6 +61,7 @@ export const ChatHome: FC<ChatHomeProps> = ({
 
   return (
     <div className="chathome">
+      <ImageCouncilModeSwitch />
       <div className="chathome-input-card">
         <textarea
           ref={textareaRef}

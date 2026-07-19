@@ -44,6 +44,7 @@ const NewsAdminPage = lazy(() => import("./components/NewsAdminPage").then(m => 
 const AuthCallbackPage = lazy(() => import("./components/AuthCallbackPage").then(m => ({ default: m.AuthCallbackPage })));
 const NotFoundPage = lazy(() => import("./components/NotFoundPage").then(m => ({ default: m.NotFoundPage })));
 const InclusionPage = lazy(() => import("./components/InclusionPage").then(m => ({ default: m.InclusionPage })));
+const ImageCouncilPage = lazy(() => import("./components/image-council/ImageCouncilPage").then(m => ({ default: m.ImageCouncilPage })));
 import { Zap as ZapIcon } from "lucide-react";
 import { supabase } from "./services/supabaseClient";
 import {
@@ -800,6 +801,8 @@ const App: FC = () => {
           {/* Home — multi-turn chat (nodes werken samen achter Thinking) */}
           <Route path="/" element={isRootAuthCallback ? <AuthCallbackPage /> : <ChatView />} />
           <Route path="/chat/:threadId" element={<ChatView />} />
+          <Route path="/beeldraad" element={<ImageCouncilPage />} />
+          <Route path="/beeldraad/:projectId" element={<ImageCouncilPage />} />
 
           {/* Landing / Welcome page */}
           <Route path="/welcome" element={<LandingPage />} />

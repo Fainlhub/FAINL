@@ -12,8 +12,6 @@ import { Session } from "@supabase/supabase-js";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../services/supabaseClient";
 
-const WEEKLY_FREE_CREDITS = 10;
-
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 export interface UserProfile {
@@ -79,7 +77,6 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
         const { data: weeklyGrant, error: weeklyGrantError } =
           await supabase.rpc("claim_weekly_credits", {
             p_user_id: userId,
-            p_amount: WEEKLY_FREE_CREDITS,
           });
 
         if (weeklyGrantError) {

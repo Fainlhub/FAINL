@@ -75,6 +75,8 @@ export const PrivacyPolicyPage: FC = () => {
 
           <h2>Hoe gaat FAINL om met Input en Output?</h2>
           <p>De Dienst van FAINL is openbaar gepositioneerd als AI-gedreven omgeving waarin gebruikers vragen kunnen invoeren en AI-output ontvangen. FAINL verwerkt Input en genereert Output voor het uitvoeren van de Dienst. FAINL gebruikt Input en Output niet voor het trainen van algemene AI-modellen, tenzij dit uitdrukkelijk vooraf kenbaar is gemaakt en daarvoor een geldige grondslag bestaat.</p>
+          <p>Voor Beeldraad omvat Input de tekstprompt en instellingen. Output omvat originelen, veiligheidscontroles, gestructureerde critiques, tussenversies, finalisten en rangschikkingen. Deze gegevens worden voor uitvoering van de opdracht gedeeld met de geactiveerde beeld- en beoordelingsproviders die voor de betreffende run nodig zijn.</p>
+          <p>Beeldraadprojecten staan in private opslag en zijn alleen toegankelijk voor de eigenaar via geauthenticeerde toegang of kortlevende downloadlinks. FAINL bewaart de veilige artifacts totdat de Gebruiker het project verwijdert. De daaropvolgende technische purge wordt uiterlijk binnen 24 uur afgerond. Geblokkeerde of verdachte output kan tijdelijk in quarantaine blijven voor beveiliging en misbruikonderzoek.</p>
 
           <h2>Met wie deelt FAINL persoonsgegevens?</h2>
           <p>FAINL kan persoonsgegevens delen met:</p>
@@ -98,7 +100,8 @@ export const PrivacyPolicyPage: FC = () => {
             <li>factuur- en betaalgegevens: minimaal zeven jaar voor fiscale bewaarplichten;</li>
             <li>supportcorrespondentie: tot één jaar na afhandeling;</li>
             <li>beveiligings- en toegangslogs: tot zeven maanden;</li>
-            <li>Input en Output: 30 dagen of conform de gekozen productinstelling.</li>
+            <li>tekstuele Input en Output: 30 dagen of conform de gekozen productinstelling;</li>
+            <li>Beeldraadprojecten en bijbehorende artifacts: totdat de Gebruiker het project verwijdert, gevolgd door een technische purge binnen 24 uur.</li>
           </ul>
 
           <h2>Beveiliging</h2>
