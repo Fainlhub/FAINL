@@ -2,13 +2,13 @@
 
 ## Goal
 
-Redesign FAINL frontend colors globally so every page, popout, and app surface uses the requested site-wide palette.
+Make the account flyout lighter by using a translucent blurred background instead of a solid light-gray panel.
 
 ## Tasks
 
-- [x] Inspect current implementation
-- [x] Identify required shared theme and utility changes
-- [x] Implement global palette override
+- [x] Inspect current account flyout implementation
+- [x] Identify required CSS-only change
+- [x] Replace solid background with blur/transparency
 - [x] Run verification
 - [x] Fix failures
 - [x] Final review

@@ -412,8 +412,13 @@ export const Sidebar: FC<SidebarProps> = ({
         </div>
 
         {/* User */}
-        <div className="flyout-trigger">
-          <button className="flyout-btn flyout-btn--user" onClick={() => setFlyoutOpen(o => !o)}>
+        <div className="flyout-trigger account-flyout">
+          <button
+            className="flyout-btn flyout-btn--user"
+            onClick={() => setFlyoutOpen(o => !o)}
+            aria-expanded={flyoutOpen}
+            aria-haspopup="menu"
+          >
             <span className="user-avatar">
               {userEmail?.charAt(0).toUpperCase() ?? 'G'}
             </span>
@@ -427,30 +432,30 @@ export const Sidebar: FC<SidebarProps> = ({
           {flyoutOpen && (
             <>
               <div className="flyout-backdrop" onClick={() => setFlyoutOpen(false)} />
-              <div className="flyout-menu">
-                <button className="flyout-item" onClick={() => { setFlyoutOpen(false); go(() => navigate('/tokens')); }}>
+              <div className="flyout-menu account-flyout-menu" role="menu">
+                <button className="flyout-item" role="menuitem" onClick={() => { setFlyoutOpen(false); go(() => navigate('/tokens')); }}>
                   <CreditCard className="flyout-icon" /> Prijzen
                 </button>
-                <button className="flyout-item" onClick={() => { setFlyoutOpen(false); go(() => navigate('/dashboard')); }}>
+                <button className="flyout-item" role="menuitem" onClick={() => { setFlyoutOpen(false); go(() => navigate('/dashboard')); }}>
                   <LayoutDashboard className="flyout-icon" /> Mijn FAINL's
                 </button>
-                <button className="flyout-item" onClick={() => { setFlyoutOpen(false); go(() => navigate('/cookbook')); }}>
+                <button className="flyout-item" role="menuitem" onClick={() => { setFlyoutOpen(false); go(() => navigate('/cookbook')); }}>
                   <BookOpen className="flyout-icon" /> Voorbeeldvragen
                 </button>
                 <div className="flyout-divider" />
-                <button className="flyout-item" onClick={() => { setFlyoutOpen(false); go(() => navigate('/faq')); }}>
+                <button className="flyout-item" role="menuitem" onClick={() => { setFlyoutOpen(false); go(() => navigate('/faq')); }}>
                   <HelpCircle className="flyout-icon" /> FAQ
                 </button>
-                <button className="flyout-item" onClick={() => { setFlyoutOpen(false); go(() => navigate('/contact')); }}>
+                <button className="flyout-item" role="menuitem" onClick={() => { setFlyoutOpen(false); go(() => navigate('/contact')); }}>
                   <Mail className="flyout-icon" /> Contact
                 </button>
-                <button className="flyout-item" onClick={() => { setFlyoutOpen(false); go(() => navigate('/inclusie')); }}>
+                <button className="flyout-item" role="menuitem" onClick={() => { setFlyoutOpen(false); go(() => navigate('/inclusie')); }}>
                   <Heart className="flyout-icon" /> Inclusieprogramma
                 </button>
                 {isLoggedIn && (
                   <>
                     <div className="flyout-divider" />
-                    <button className="flyout-item" onClick={() => { setFlyoutOpen(false); onLogout(); }}>
+                    <button className="flyout-item" role="menuitem" onClick={() => { setFlyoutOpen(false); onLogout(); }}>
                       <LogOut className="flyout-icon" /> Uitloggen
                     </button>
                   </>
