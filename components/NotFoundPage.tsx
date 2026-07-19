@@ -9,6 +9,7 @@ export const NotFoundPage: FC = () => {
         title="404 — Pagina niet gevonden"
         description="Deze pagina bestaat niet. Ga terug naar FAINL."
         canonical="/404"
+        noIndex
       />
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-120px)] px-4 py-12 text-center">
         <video

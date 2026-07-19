@@ -118,7 +118,7 @@ export const CompletionActions: FC<CompletionActionsProps> = ({
               const text =
                 (synthesis || '').slice(0, 200) +
                 '... Lees het volledige oordeel op fainl.com';
-              navigator.share({ title, text, url: 'https://fainl.com' }).catch(() => {});
+              navigator.share({ title, text, url: 'https://www.fainl.com' }).catch(() => {});
             }}
             className="btn-ghost"
           >

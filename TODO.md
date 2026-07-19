@@ -2,25 +2,23 @@
 
 ## Goal
 
-Build and ship the first production-ready Beeldraad slice: durable private image
-projects, bounded multi-provider orchestration, credit settlement, and the complete
-responsive top-three plus gallery experience.
+Make FAINL's public content reliably discoverable and keep the AI news section
+fresh through a bounded, source-based, half-hourly publication pipeline.
 
 ## Tasks
 
-- [x] Re-read required Supabase, vision, frontend, and Ralph-loop guidance
-- [x] Verify current Supabase Queue, Storage, Realtime, and Edge Function limits
-- [x] Inspect the current FAINL routes, navigation, credits, and Supabase patterns
-- [ ] Add the Beeldraad schema, RLS, private Storage, Queue, catalog, and credit RPCs
-- [ ] Add authenticated start, command, and worker Edge Functions
-- [ ] Add provider contracts, moderation, fixtures, and bounded state-machine logic
-- [ ] Add Beeldraad frontend types, service, context, and project UI
-- [ ] Integrate routes, desktop sidebar, mobile navigation, and composer mode switch
-- [ ] Add gallery, top three, lineage inspector, viewer, selection, retry, cancel, and delete
-- [ ] Update pricing, privacy, AI terms, environment documentation, and disclosures
-- [ ] Add unit, SQL, contract, failure-injection, and E2E coverage
-- [ ] Run typecheck, tests, build, browser QA, and security review
-- [ ] Apply Supabase changes and deploy only after local gates pass
+- [x] Inspect current sitemap, routes, metadata, news functions, storage, and ads
+- [x] Verify current Google sitemap, AI search crawler, and AdSense guidance
+- [x] Replace the stale sitemap with a static plus dynamic sitemap architecture
+- [x] Add RSS, llms discovery, robots rules, and private-route noindex headers
+- [x] Add the secured half-hour Supabase news refresh function and cron migration
+- [x] Strengthen FAINL tone, content quality, image, and automatic publication gates
+- [x] Add generated fallback artwork and responsive news AdSense units
+- [x] Add unit and source-contract tests
+- [x] Run typecheck, tests, build, XML checks, and browser QA
+- [x] Record deployment and secret requirements
+- [ ] Deploy the migration and Edge Functions after Supabase CLI authentication is restored
+- [ ] Configure `news_refresh_url`, `news_refresh_secret`, and the AdSense slot in production
 
 ## Completion Marker
 

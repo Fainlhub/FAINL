@@ -1,0 +1,19 @@
+# FAINL
+
+> FAINL is a Dutch multi-model AI consensus platform. Multiple models answer independently, challenge assumptions, debate, and return one weighted conclusion.
+
+## Primary public pages
+
+- [FAINL](https://www.fainl.com/): product and chat entry point
+- [AI nieuws](https://www.fainl.com/nieuws): source-based Dutch AI news and analysis
+- [Recent news feed](https://www.fainl.com/api/news-feed): RSS 2.0 feed with current published articles
+- [AI model comparison](https://www.fainl.com/vergelijk/chatgpt-vs-gemini-vs-claude): model comparison guide
+- [AI model guides](https://www.fainl.com/modellen/gpt-5-6-sol-uitleg): practical model documentation
+- [Tutorials](https://www.fainl.com/tutorials/ai-modellen-kiezen-voor-bedrijf): practical AI workflows
+- [Pricing](https://www.fainl.com/tokens): credits and plans
+- [FAQ](https://www.fainl.com/faq): product and usage answers
+- [Contact](https://www.fainl.com/contact): organization contact route
+
+## Content policy
+
+FAINL news articles are based on linked primary sources. They are rewritten in Dutch, add FAINL-specific analysis, disclose source links, and must pass text and image quality checks before automatic publication.

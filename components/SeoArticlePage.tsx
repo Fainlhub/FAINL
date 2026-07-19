@@ -10,14 +10,17 @@ import {
   SeoSection,
 } from "../data/seoContent";
 import { getPublishedNewsPost, NewsPost } from "../services/newsService";
+import { NewsAdSlot } from "./ads/NewsAdSlot";
 
-const SITE_URL = "https://fainl.com";
+const SITE_URL = "https://www.fainl.com";
+const NEWS_FALLBACK_IMAGE = `${SITE_URL}/fainl-news-fallback.png`;
 
 interface SeoArticlePageProps {
   section: SeoSection;
+  showAds?: boolean;
 }
 
-export const SeoArticlePage: FC<SeoArticlePageProps> = ({ section }) => {
+export const SeoArticlePage: FC<SeoArticlePageProps> = ({ section, showAds = false }) => {
   const navigate = useNavigate();
   const { slug } = useParams<{ slug: string }>();
   const page = findSeoContentPage(section, slug);
@@ -56,19 +59,19 @@ export const SeoArticlePage: FC<SeoArticlePageProps> = ({ section }) => {
       "@context": "https://schema.org",
       "@graph": [
         {
-          "@type": "Article",
+          "@type": "NewsArticle",
           headline: newsPost.title,
           description: newsPost.excerpt,
           url: `${SITE_URL}${canonical}`,
           datePublished: newsPost.published_at || newsPost.created_at,
-          dateModified: newsPost.published_at || newsPost.created_at,
+          dateModified: newsPost.updated_at,
           author: { "@type": "Organization", name: "FAINL", url: SITE_URL },
           publisher: {
             "@type": "Organization",
             name: "FAINL",
             logo: { "@type": "ImageObject", url: `${SITE_URL}/favicon.png` },
           },
-          image: newsPost.hero_image_url ? [newsPost.hero_image_url] : undefined,
+          image: [newsPost.hero_image_url || NEWS_FALLBACK_IMAGE],
         },
         {
           "@type": "BreadcrumbList",
@@ -90,7 +93,10 @@ export const SeoArticlePage: FC<SeoArticlePageProps> = ({ section }) => {
           keywords={newsPost.keywords.join(", ")}
           ogTitle={newsPost.title}
           ogDescription={newsPost.excerpt}
-          ogImage={newsPost.hero_image_url || undefined}
+          ogImage={newsPost.hero_image_url || NEWS_FALLBACK_IMAGE}
+          ogImageAlt={newsPost.hero_image_alt || newsPost.title}
+          ogImageWidth={1536}
+          ogImageHeight={1024}
           ogType="article"
           jsonLd={jsonLd}
         />
@@ -119,19 +125,19 @@ export const SeoArticlePage: FC<SeoArticlePageProps> = ({ section }) => {
             </p>
           </header>
 
-          {newsPost.hero_image_url && (
-            <img
-              src={newsPost.hero_image_url}
-              alt={newsPost.hero_image_alt || newsPost.title}
-              width={1536}
-              height={1024}
-              className="w-full aspect-[3/2] object-cover border-4 border-black dark:border-[var(--line)] mb-10"
-            />
-          )}
+          <img
+            src={newsPost.hero_image_url || NEWS_FALLBACK_IMAGE}
+            alt={newsPost.hero_image_alt || newsPost.title}
+            width={1536}
+            height={1024}
+            className="w-full aspect-[3/2] object-cover border-4 border-black dark:border-[var(--line)] mb-10"
+          />
 
-          <div className="prose prose-lg max-w-none dark:prose-invert prose-headings:font-black prose-headings:uppercase prose-a:text-[var(--ink)] prose-img:border-4 prose-img:border-black">
+          <div className="prose prose-lg max-w-[70ch] dark:prose-invert prose-headings:font-black prose-headings:uppercase prose-a:text-[var(--ink)] prose-img:border-4 prose-img:border-black">
             <ReactMarkdown>{newsPost.body_markdown}</ReactMarkdown>
           </div>
+
+          <NewsAdSlot enabled={showAds} placement="article" />
 
           {newsPost.source_links.length > 0 && (
             <section className="mt-12 pt-8 border-t-4 border-black dark:border-[var(--line)]">
@@ -315,6 +321,8 @@ export const SeoArticlePage: FC<SeoArticlePageProps> = ({ section }) => {
             </ul>
           </aside>
         </section>
+
+        <NewsAdSlot enabled={showAds} placement="article" />
 
         {page.comparison && (
           <section className="pb-14">

@@ -726,9 +726,11 @@ const App: FC = () => {
     }
   };
 
+  const showContentAds = !Boolean((authSession && !profile) || hasAdFreeAccess);
+
   return (
     <AppShell>
-      <AdSenseLoader disabled={Boolean((authSession && !profile) || hasAdFreeAccess)} />
+      <AdSenseLoader disabled={!showContentAds} />
 
       {isAnnouncementVisible && newsletterState !== 'success' && (
         <div className="w-full bg-[var(--action)] text-black px-4 py-4 relative border-b-4 border-black">
@@ -795,7 +797,7 @@ const App: FC = () => {
         </div>
       )}
 
-      <main className="flex-1 w-full flex flex-col">
+      <main id="main-content" className="flex-1 w-full min-w-0 flex flex-col">
         <Suspense fallback={<div className="flex items-center justify-center min-h-[40vh]"><div className="w-6 h-6 border-2 border-black/20 border-t-black dark:border-white/20 dark:border-t-white rounded-full animate-spin" /></div>}>
         <Routes>
           {/* Home — multi-turn chat (nodes werken samen achter Thinking) */}
@@ -817,6 +819,7 @@ const App: FC = () => {
                   description="Stel jouw vraag aan meerdere AI-modellen tegelijk. Gemini, GPT-4 en Claude analyseren parallel, debatteren live en geven één gewogen eindoordeel."
                   canonical="/mission"
                   keywords="AI vraag stellen, meerdere AI modellen, AI consensus sessie"
+                  noIndex
                 />
                 <div className="session-wrap">
                   {session.stage === WorkflowStage.ERROR && (
@@ -988,8 +991,8 @@ const App: FC = () => {
           <Route path="/vergelijken/ai-modellen-vergelijken" element={<CompareMultiModelPage />} />
 
           {/* AI nieuws, modelgidsen en content hubs */}
-          <Route path="/nieuws" element={<NewsPage />} />
-          <Route path="/nieuws/:slug" element={<SeoArticlePage section="nieuws" />} />
+          <Route path="/nieuws" element={<NewsPage showAds={showContentAds} />} />
+          <Route path="/nieuws/:slug" element={<SeoArticlePage section="nieuws" showAds={showContentAds} />} />
           <Route path="/vergelijken/:slug" element={<SeoArticlePage section="vergelijken" />} />
           <Route path="/modellen/:slug" element={<SeoArticlePage section="modellen" />} />
           <Route path="/tutorials/:slug" element={<SeoArticlePage section="tutorials" />} />

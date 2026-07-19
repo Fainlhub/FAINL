@@ -22,6 +22,43 @@ const EXAMPLE_QUESTIONS = [
 const pickRandom = (arr: string[], n: number): string[] =>
   [...arr].sort(() => Math.random() - 0.5).slice(0, n);
 
+const HOME_STRUCTURED_DATA = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      '@id': 'https://www.fainl.com/#organization',
+      name: 'FAINL',
+      url: 'https://www.fainl.com/',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://www.fainl.com/fainl-logo.png',
+      },
+    },
+    {
+      '@type': 'WebSite',
+      '@id': 'https://www.fainl.com/#website',
+      url: 'https://www.fainl.com/',
+      name: 'FAINL AI Consensus Engine',
+      publisher: { '@id': 'https://www.fainl.com/#organization' },
+      inLanguage: 'nl-NL',
+    },
+    {
+      '@type': 'SoftwareApplication',
+      '@id': 'https://www.fainl.com/#app',
+      name: 'FAINL',
+      url: 'https://www.fainl.com/',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: {
+        '@type': 'Offer',
+        price: '0',
+        priceCurrency: 'EUR',
+      },
+    },
+  ],
+};
+
 export const ChatView: FC = () => {
   const { threadId } = useParams<{ threadId: string }>();
   const navigate = useNavigate();
@@ -69,6 +106,7 @@ export const ChatView: FC = () => {
         description="Chat met FAINL zoals je gewend bent: kies een of meerdere AI-modellen en bewaar je gesprekken na login."
         canonical="/"
         keywords="AI chat, multi-model AI, AI consensus, FAINL"
+        jsonLd={HOME_STRUCTURED_DATA}
       />
 
       {isEmpty ? (

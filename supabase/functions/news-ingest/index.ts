@@ -135,7 +135,7 @@ serve(async (req: Request) => {
 
     for (const source of (sources ?? []) as NewsSource[]) {
       const res = await fetch(source.feed_url, {
-        headers: { "User-Agent": "FAINL-NewsBot/1.0 (+https://fainl.com/nieuws)" },
+        headers: { "User-Agent": "FAINL-NewsBot/1.0 (+https://www.fainl.com/nieuws)" },
       })
       if (!res.ok) continue
 

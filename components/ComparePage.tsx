@@ -127,22 +127,22 @@ const JSON_LD = {
       headline: 'ChatGPT vs Gemini vs Claude: Welke AI wint in 2026?',
       description:
         'Vergelijk ChatGPT (OpenAI), Google Gemini en Anthropic Claude op creativiteit, nauwkeurigheid, snelheid en kosten. Inclusief vergelijkingstabel en FAINL als multi-model alternatief.',
-      url: 'https://fainl.com/vergelijk/chatgpt-vs-gemini-vs-claude',
+      url: 'https://www.fainl.com/vergelijk/chatgpt-vs-gemini-vs-claude',
       datePublished: '2026-03-11',
       dateModified: '2026-03-11',
-      author: { '@type': 'Organization', name: 'FAINL', url: 'https://fainl.com' },
+      author: { '@type': 'Organization', name: 'FAINL', url: 'https://www.fainl.com' },
       publisher: {
         '@type': 'Organization',
         name: 'FAINL',
-        logo: { '@type': 'ImageObject', url: 'https://fainl.com/favicon.png' },
+        logo: { '@type': 'ImageObject', url: 'https://www.fainl.com/favicon.png' },
       },
     },
     {
       '@type': 'BreadcrumbList',
       itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Home',    item: 'https://fainl.com/' },
-        { '@type': 'ListItem', position: 2, name: 'Vergelijk', item: 'https://fainl.com/vergelijk' },
-        { '@type': 'ListItem', position: 3, name: 'ChatGPT vs Gemini vs Claude', item: 'https://fainl.com/vergelijk/chatgpt-vs-gemini-vs-claude' },
+        { '@type': 'ListItem', position: 1, name: 'Home',    item: 'https://www.fainl.com/' },
+        { '@type': 'ListItem', position: 2, name: 'Vergelijk', item: 'https://www.fainl.com/vergelijk' },
+        { '@type': 'ListItem', position: 3, name: 'ChatGPT vs Gemini vs Claude', item: 'https://www.fainl.com/vergelijk/chatgpt-vs-gemini-vs-claude' },
       ],
     },
     {

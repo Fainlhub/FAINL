@@ -10,6 +10,8 @@
       gtag('consent', 'default', {
         'analytics_storage': 'denied',
         'ad_storage': 'denied',
+        'ad_user_data': 'denied',
+        'ad_personalization': 'denied',
         'wait_for_update': 2000
       });
       gtag('js', new Date());
@@ -35,100 +37,15 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'" />
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap" /></noscript>
 
-    <!-- Base SEO (per pagina overschreven via react-helmet-async) -->
+    <!-- Route-specific SEO is supplied by React or the news SSR endpoint. -->
     <title>FAINL — AI Consensus Engine | Meerdere AI's. Één Antwoord.</title>
-    <meta
-      name="description"
-      content="FAINL laat Gemini, GPT-4, Claude en meer tegelijk jouw vraag analyseren. Ze debatteren live en geven samen één scherp, gewogen eindoordeel. 2 sessies gratis."
-    />
-    <meta
-      name="keywords"
-      content="AI consensus, meerdere AI modellen, AI debat tool, ChatGPT alternatief, Gemini GPT Claude vergelijken, AI beslissingstool, gratis AI tool, kunstmatige intelligentie Nederland"
-    />
-    <meta name="robots" content="index, follow" />
     <meta name="author" content="FAINL" />
     <meta name="google-site-verification" content="fae8d728070fbb27" />
     <meta name="google-adsense-account" content="ca-pub-7584438343948866" />
 
-    <!-- Canonical + hreflang (non-www is canonical; www 301-redirect moet op CDN/DNS niveau worden geconfigureerd) -->
-    <link rel="canonical" href="https://fainl.com/" />
-    <link rel="alternate" hreflang="nl-NL" href="https://fainl.com/" />
-    <link rel="alternate" hreflang="nl" href="https://fainl.com/" />
-    <link rel="alternate" hreflang="x-default" href="https://fainl.com/" />
-
-    <!-- Open Graph -->
-    <meta property="og:site_name" content="FAINL" />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://fainl.com/" />
-    <meta property="og:title" content="FAINL — AI Consensus Engine | Meerdere AI's. Één Antwoord." />
-    <meta property="og:description" content="Laat Gemini, GPT-4, Claude en Llama tegelijk jouw vraag beantwoorden, elkaars redenering bekritiseren en live debatteren. FAINL geeft het scherpste AI-oordeel." />
-    <meta property="og:image" content="https://fainl.com/fainl-logo.png" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="FAINL — AI Consensus Engine" />
-    <meta property="og:locale" content="nl_NL" />
-
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="FAINL — AI Consensus Engine | Meerdere AI's. Één Antwoord." />
-    <meta name="twitter:description" content="Laat meerdere AI-modellen tegelijk debatteren over jouw vraag. 2 sessies gratis, geen account nodig." />
-    <meta name="twitter:image" content="https://fainl.com/fainl-logo.png" />
-
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/favicon.png" />
-
-    <!-- Structured Data — Organisation + WebSite -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@graph": [
-        {
-          "@type": "Organization",
-          "@id": "https://fainl.com/#organization",
-          "name": "FAINL",
-          "url": "https://fainl.com/",
-          "logo": {
-            "@type": "ImageObject",
-            "url": "https://fainl.com/fainl-logo.png"
-          },
-          "sameAs": []
-        },
-        {
-          "@type": "WebSite",
-          "@id": "https://fainl.com/#website",
-          "url": "https://fainl.com/",
-          "name": "FAINL — AI Consensus Engine",
-          "description": "FAINL laat meerdere AI-modellen tegelijk jouw vraag analyseren, debatteren en samen één gewogen antwoord geven.",
-          "publisher": { "@id": "https://fainl.com/#organization" },
-          "inLanguage": "nl-NL",
-          "potentialAction": {
-            "@type": "SearchAction",
-            "target": {
-              "@type": "EntryPoint",
-              "urlTemplate": "https://fainl.com/mission?q={search_term_string}"
-            },
-            "query-input": "required name=search_term_string"
-          }
-        },
-        {
-          "@type": "SoftwareApplication",
-          "@id": "https://fainl.com/#app",
-          "name": "FAINL",
-          "url": "https://fainl.com/",
-          "applicationCategory": "BusinessApplication",
-          "operatingSystem": "Web",
-          "offers": {
-            "@type": "Offer",
-            "price": "0",
-            "priceCurrency": "EUR",
-            "description": "Twee gratis sessies — geen creditcard nodig"
-          },
-          "description": "AI Consensus Engine: meerdere grote taalmodellen (GPT-4, Gemini, Claude, Llama) analyseren parallel jouw vraag, debatteren live en produceren één gewogen eindoordeel."
-        }
-      ]
-    }
-    </script>
 
     <!-- SPA routing: 404.html is a copy of this file (generated at build time via vite.config.ts).
          GitHub Pages serves 404.html at the original URL (no HTTP redirect),

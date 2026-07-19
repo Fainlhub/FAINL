@@ -114,7 +114,7 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
         style={{ '--sb-w': `${sidebarWidth}px` } as React.CSSProperties}
       >
         <TopBar onMenuOpen={() => setMobileMenuOpen(true)} />
-        <div id="main-content" role="main" aria-live="polite">
+        <div>
           {children}
         </div>
         <LegalFooter />

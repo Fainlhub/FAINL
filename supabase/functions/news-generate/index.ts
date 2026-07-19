@@ -9,7 +9,7 @@ const ADMIN_TOKEN = Deno.env.get("NEWS_ADMIN_TOKEN") ?? ""
 const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY") ?? ""
 const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY") ?? ""
 const OPENAI_TEXT_MODEL = Deno.env.get("NEWS_TEXT_MODEL") ?? "gpt-4.1-mini"
-const OPENAI_IMAGE_MODEL = Deno.env.get("NEWS_IMAGE_MODEL") ?? "gpt-image-1"
+const OPENAI_IMAGE_MODEL = Deno.env.get("NEWS_IMAGE_MODEL") ?? "gpt-image-2"
 const GEMINI_IMAGE_MODEL = Deno.env.get("NEWS_GEMINI_IMAGE_MODEL") ?? "gemini-3.1-flash-image"
 const AUTO_PUBLISH = Deno.env.get("NEWS_AUTO_PUBLISH") === "true"
 
@@ -31,6 +31,18 @@ interface NewsItem {
   author: string | null
   published_at: string | null
   news_sources?: { name?: string } | null
+}
+
+interface GeneratedDraft {
+  title?: string
+  excerpt?: string
+  bodyMarkdown?: string
+  body_markdown?: string
+  seoTitle?: string
+  seoDescription?: string
+  keywords?: unknown
+  imagePrompt?: string
+  imageAlt?: string
 }
 
 function json(data: unknown, status = 200): Response {
@@ -80,10 +92,23 @@ function findImageData(value: unknown): { data: string; mimeType: string } | nul
   return null
 }
 
-async function createDraft(item: NewsItem): Promise<any> {
+function validateDraft(draft: GeneratedDraft): { valid: boolean; issues: string[] } {
+  const body = draft.bodyMarkdown || draft.body_markdown || ""
+  const issues: string[] = []
+  if (!draft.title || draft.title.trim().length < 20) issues.push("title_too_short")
+  if (!draft.excerpt || draft.excerpt.trim().length < 80) issues.push("excerpt_too_short")
+  if (body.trim().length < 700) issues.push("body_too_short")
+  if (!draft.seoDescription || draft.seoDescription.trim().length < 100) issues.push("seo_description_too_short")
+  if (!Array.isArray(draft.keywords) || draft.keywords.length < 3) issues.push("keywords_missing")
+  if (!draft.imagePrompt || draft.imagePrompt.trim().length < 30) issues.push("image_prompt_missing")
+  return { valid: issues.length === 0, issues }
+}
+
+async function createDraft(item: NewsItem): Promise<GeneratedDraft> {
   const prompt = `
-Je bent de FAINL AI-redactie. Schrijf GEEN vertaling en kopieer GEEN alinea's.
-Maak een eigen Nederlandstalig nieuwsartikel op basis van dit bronitem.
+Je bent de FAINL AI-redactie. Herschrijf dit nieuws in natuurlijk Nederlands
+en voeg eigen, controleerbare duiding toe. Kopieer of vertaal nooit hele
+zinnen of alinea's uit de bron.
 
 Bron:
 - Titel: ${item.title}
@@ -93,14 +118,17 @@ Bron:
 - Gepubliceerd: ${item.published_at ?? "onbekend"}
 
 Regels:
-- Native Nederlands, zakelijk, helder.
-- Eigen duiding: wat betekent dit voor AI-gebruikers, teams en FAINL's multi-model visie?
+- Schrijf in de FAINL tone of voice: direct, nuchter, analytisch en precies.
+- Begin met de nieuwswaarde. Vermijd hype, marketingtaal en clickbait.
+- Leg uit wat zeker is, wat nog onzeker is en voor wie de ontwikkeling relevant is.
+- Voeg eigen duiding toe voor AI-gebruikers, teams en FAINL's multi-model visie.
 - Geen verzonnen feiten.
-- Noem dat de bron onderaan gelinkt wordt, maar plaats geen markdownbronlijst in body.
-- Maximaal 900 woorden.
-- Maak SEO metadata en FAQ.
+- Schrijf minimaal 450 en maximaal 900 woorden.
+- Gebruik korte alinea's en beschrijvende H2-koppen in markdown.
+- De bron staat onderaan de pagina; plaats geen losse bronlijst in de body.
+- Maak specifieke SEO-metadata en een beeldprompt die zichtbaar bij dit nieuwsfeit past.
 - Output uitsluitend JSON met keys:
-  title, excerpt, bodyMarkdown, seoTitle, seoDescription, keywords, imagePrompt, imageAlt, faq.
+  title, excerpt, bodyMarkdown, seoTitle, seoDescription, keywords, imagePrompt, imageAlt.
 `
 
   if (OPENAI_API_KEY) {
@@ -169,9 +197,10 @@ async function createHeroImage(postId: string, imagePrompt: string): Promise<{ u
   const prompt = [
     "Editorial website hero image for an AI news article.",
     imagePrompt,
-    "Photorealistic or premium editorial technology style.",
-    "No readable text, no logos, no watermarks, no UI screenshots.",
-    "Wide composition, clean negative space, suitable for a Dutch AI news page.",
+    "Restrained Dutch editorial technology photography with one clear focal subject.",
+    "Warm off-white environment, deep navy shadows, cool grey materials, natural directional light.",
+    "Generous negative space, 3:2 composition, central social-crop safe zone.",
+    "No readable text, logos, watermarks, trademarks, UI screenshots, neon cyberpunk, glowing AI brains, humanoid robots, or visual clutter.",
   ].join(" ")
 
   if (OPENAI_API_KEY) {
@@ -331,6 +360,7 @@ serve(async (req: Request) => {
   const authorized = isAuthorized(req)
   const body = req.method === "POST" ? await req.json().catch(() => ({})) : {}
   const force = authorized && body.force === true
+  const autoPublishRequested = AUTO_PUBLISH || (authorized && body.mode === "cron")
   if (!force && await hasRecentPublishedPost()) {
     return json({ ok: true, skipped: true, reason: "recent_post_exists" })
   }
@@ -352,17 +382,20 @@ serve(async (req: Request) => {
     if (error) throw error
 
     let created = 0
+    let published = 0
+    let heldForReview = 0
     for (const item of (items ?? []) as NewsItem[]) {
       const already = await supabase.from("news_posts").select("id").eq("source_item_id", item.id).maybeSingle()
       if (already.data) continue
 
       const draft = await createDraft(item)
+      const quality = validateDraft(draft)
       const baseSlug = slugify(draft.title || item.title)
       const slug = `${baseSlug}-${new Date().toISOString().slice(0, 10)}`
       const insert = await supabase.from("news_posts").insert({
         source_item_id: item.id,
         slug,
-        status: AUTO_PUBLISH ? "published" : "review",
+        status: "review",
         title: draft.title || item.title,
         excerpt: draft.excerpt || item.summary || item.title,
         body_markdown: draft.bodyMarkdown || draft.body_markdown || "",
@@ -374,16 +407,30 @@ serve(async (req: Request) => {
         source_links: [{ label: item.news_sources?.name ?? item.author ?? "Bron", url: item.source_url }],
         generation_model: OPENAI_API_KEY ? OPENAI_TEXT_MODEL : "gemini-2.5-flash",
         generated_at: new Date().toISOString(),
-        published_at: AUTO_PUBLISH ? new Date().toISOString() : null,
+        published_at: null,
+        review_notes: quality.valid ? null : `Automatische kwaliteitsgate: ${quality.issues.join(", ")}`,
       }).select("id,image_prompt").single()
 
       if (insert.error) continue
 
       const image = await createHeroImage(insert.data.id, insert.data.image_prompt)
-      if (image.url) {
-        await supabase.from("news_posts").update({ hero_image_url: image.url, image_prompt: image.prompt }).eq("id", insert.data.id)
-      }
+      const canPublish = autoPublishRequested && quality.valid && Boolean(image.url)
+      await supabase.from("news_posts").update({
+        hero_image_url: image.url,
+        image_prompt: image.prompt,
+        status: canPublish ? "published" : "review",
+        published_at: canPublish ? new Date().toISOString() : null,
+        review_notes: canPublish
+          ? null
+          : quality.valid
+            ? `Beeldgeneratie niet voltooid: ${image.error ?? "unknown"}`
+            : `Automatische kwaliteitsgate: ${quality.issues.join(", ")}`,
+        updated_at: new Date().toISOString(),
+      }).eq("id", insert.data.id)
+
       created += 1
+      if (canPublish) published += 1
+      else heldForReview += 1
       break
     }
 
@@ -395,7 +442,13 @@ serve(async (req: Request) => {
       }).eq("id", runId)
     }
 
-    return json({ ok: true, postsCreated: created, autoPublish: AUTO_PUBLISH })
+    return json({
+      ok: true,
+      postsCreated: created,
+      postsPublished: published,
+      heldForReview,
+      autoPublish: autoPublishRequested,
+    })
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error"
     if (runId) {

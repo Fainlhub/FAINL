@@ -431,7 +431,9 @@ body.sidebar-resizing * {
 
 /* ── Main canvas ─────────────────────────────────────────────────────────── */
 .main-canvas {
-  flex: 1;
+  flex: 0 1 auto;
+  width: calc(100% - var(--sb-w));
+  min-width: 0;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
@@ -441,7 +443,10 @@ body.sidebar-resizing * {
 body.sidebar-resizing .main-canvas {
   transition: none;
 }
-.main-canvas.sidebar-collapsed { margin-left: var(--sb-w-collapsed); }
+.main-canvas.sidebar-collapsed {
+  width: calc(100% - var(--sb-w-collapsed));
+  margin-left: var(--sb-w-collapsed);
+}
 
 .legal-footer {
   margin-top: auto;
@@ -463,6 +468,9 @@ body.sidebar-resizing .main-canvas {
   text-transform: uppercase;
   text-decoration: none;
   transition: color 0.12s, opacity 0.12s;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
 }
 .legal-footer__link:hover {
   color: var(--ink);
@@ -479,7 +487,14 @@ body.sidebar-resizing .main-canvas {
   .sidebar.collapsed { transform: translateX(-100%); width: 280px; }
   .sidebar .sidebar-toggle-btn { display: none; }
   .sidebar .sidebar-resize-handle { display: none; }
-  .main-canvas { margin-left: 0; }
+  .main-canvas {
+    width: 100%;
+    margin-left: 0;
+  }
+  .main-canvas.sidebar-collapsed {
+    width: 100%;
+    margin-left: 0;
+  }
 }
 
 .sidebar-overlay {
@@ -516,8 +531,8 @@ body.sidebar-resizing .main-canvas {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   background: transparent;
   border: none;
   border-radius: var(--r-sm);
@@ -558,6 +573,48 @@ body.sidebar-resizing .main-canvas {
 }
 .mobile-nav-item.active { color: #fff; }
 .mobile-nav-item svg { width: 18px; height: 18px; }
+
+.news-heading {
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+
+.news-ad-slot {
+  width: min(100%, 728px);
+  min-height: 100px;
+  margin: clamp(2rem, 7vw, 3.5rem) auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--line-2);
+  contain: layout;
+}
+
+.news-ad-slot__label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--ink-4);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  line-height: 1;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.news-ad-slot .adsbygoogle {
+  width: 100%;
+  min-height: 90px;
+}
+
+@media (max-width: 639px) {
+  .news-ad-slot {
+    width: min(100%, 280px);
+    min-height: 250px;
+  }
+
+  .news-ad-slot .adsbygoogle {
+    min-height: 250px;
+  }
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    HERO / CHAT HOME

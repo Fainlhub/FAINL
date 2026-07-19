@@ -4,14 +4,18 @@ import { ArrowRight, Newspaper, Sparkles } from "lucide-react";
 import { SEO } from "./SEO";
 import { getContentPath, getPagesBySection, SEO_CONTENT_PAGES } from "../data/seoContent";
 import { getPublishedNewsPosts, NewsPost } from "../services/newsService";
+import { NewsAdSlot } from "./ads/NewsAdSlot";
 
-const SITE_URL = "https://fainl.com";
+const SITE_URL = "https://www.fainl.com";
 
-export const NewsPage: FC = () => {
+interface NewsPageProps {
+  showAds?: boolean;
+}
+
+export const NewsPage: FC<NewsPageProps> = ({ showAds = false }) => {
   const navigate = useNavigate();
   const staticNews = getPagesBySection("nieuws");
   const [posts, setPosts] = useState<NewsPost[]>([]);
-  const [loaded, setLoaded] = useState(false);
   const featuredPost = posts[0];
   const featuredStatic = staticNews[0];
   const clusters = [
@@ -28,6 +32,15 @@ export const NewsPage: FC = () => {
     description: "Nieuws, vergelijkingen, tutorials en modelgidsen over AI-tools en multi-model consensus.",
     url: `${SITE_URL}/nieuws`,
     publisher: { "@type": "Organization", name: "FAINL", url: SITE_URL },
+    mainEntity: {
+      "@type": "ItemList",
+      itemListElement: posts.map((post, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        name: post.title,
+        url: `${SITE_URL}/nieuws/${post.slug}`,
+      })),
+    },
   };
 
   useEffect(() => {
@@ -36,11 +49,8 @@ export const NewsPage: FC = () => {
       .then((items) => {
         if (!active) return;
         setPosts(items);
-        setLoaded(true);
       })
-      .catch(() => {
-        if (active) setLoaded(true);
-      });
+      .catch(() => undefined);
     return () => {
       active = false;
     };
@@ -58,7 +68,7 @@ export const NewsPage: FC = () => {
         jsonLd={jsonLd}
       />
 
-      <main className="max-w-6xl mx-auto px-5 sm:px-8 py-10 md:py-16">
+      <div className="news-page max-w-6xl mx-auto px-5 sm:px-8 py-10 md:py-16">
         <section className="pb-10 md:pb-14 border-b-4 border-black dark:border-[var(--line)]">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-black dark:bg-[var(--action)] text-white dark:text-black text-sm md:text-base font-black uppercase tracking-[0.22em] mb-6">
             <Newspaper className="w-4 h-4" />
@@ -111,44 +121,54 @@ export const NewsPage: FC = () => {
                 to={`/nieuws/${post.slug}`}
                 className="border-4 border-black dark:border-[var(--line)] bg-white dark:bg-black overflow-hidden hover:shadow-[6px_6px_0_0_black] dark:hover:shadow-[6px_6px_0_0_rgba(255,255,255,0.22)] transition-shadow"
               >
-                {post.hero_image_url && (
-                  <img
-                    src={post.hero_image_url}
-                    alt={post.hero_image_alt || post.title}
-                    width={1536}
-                    height={1024}
-                    loading="lazy"
-                    className="w-full aspect-[3/2] object-cover border-b-4 border-black dark:border-[var(--line)]"
-                  />
-                )}
+                <img
+                  src={post.hero_image_url || "/fainl-news-fallback.png"}
+                  alt={post.hero_image_alt || post.title}
+                  width={1536}
+                  height={1024}
+                  loading="lazy"
+                  className="w-full aspect-[3/2] object-cover border-b-4 border-black dark:border-[var(--line)]"
+                />
                 <div className="p-6">
                   <p className="text-sm font-black uppercase tracking-[0.22em] text-[var(--ink)] mb-3">
                     Nieuws / {post.published_at?.slice(0, 10) || post.created_at.slice(0, 10)}
                   </p>
-                  <h3 className="text-2xl font-black uppercase tracking-tight text-black dark:text-white mb-3 leading-tight">
+                  <h3 className="news-heading text-2xl font-black uppercase tracking-tight text-black dark:text-white mb-3 leading-tight">
                     {post.title}
                   </h3>
                   <p className="text-black/70 dark:text-white/70 leading-relaxed">{post.excerpt}</p>
                 </div>
               </Link>
             ))}
-            {loaded && posts.length === 0 && staticNews.map((page) => (
+            {posts.length === 0 && staticNews.map((page) => (
               <Link
                 key={page.slug}
                 to={getContentPath(page)}
-                className="border-4 border-black dark:border-[var(--line)] bg-white dark:bg-black p-6 hover:shadow-[6px_6px_0_0_black] dark:hover:shadow-[6px_6px_0_0_rgba(255,255,255,0.22)] transition-shadow"
+                className="border-4 border-black dark:border-[var(--line)] bg-white dark:bg-black overflow-hidden hover:shadow-[6px_6px_0_0_black] dark:hover:shadow-[6px_6px_0_0_rgba(255,255,255,0.22)] transition-shadow"
               >
-                <p className="text-sm font-black uppercase tracking-[0.22em] text-[var(--ink)] mb-3">
-                  {page.kicker} / {page.updated}
-                </p>
-                <h3 className="text-2xl font-black uppercase tracking-tight text-black dark:text-white mb-3 leading-tight">
-                  {page.title}
-                </h3>
-                <p className="text-black/70 dark:text-white/70 leading-relaxed">{page.description}</p>
+                <img
+                  src="/fainl-news-fallback.png"
+                  alt=""
+                  width={1536}
+                  height={1024}
+                  loading="lazy"
+                  className="w-full aspect-[3/2] object-cover border-b-4 border-black dark:border-[var(--line)]"
+                />
+                <div className="p-6">
+                  <p className="text-sm font-black uppercase tracking-[0.22em] text-[var(--ink)] mb-3">
+                    {page.kicker} / {page.updated}
+                  </p>
+                  <h3 className="news-heading text-2xl font-black uppercase tracking-tight text-black dark:text-white mb-3 leading-tight">
+                    {page.title}
+                  </h3>
+                  <p className="text-black/70 dark:text-white/70 leading-relaxed">{page.description}</p>
+                </div>
               </Link>
             ))}
           </div>
         </section>
+
+        <NewsAdSlot enabled={showAds} placement="feed" />
 
         <section className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-14">
           {clusters.map((cluster) => {
@@ -197,7 +217,7 @@ export const NewsPage: FC = () => {
         <p className="mt-8 text-sm text-black/40 dark:text-white/40">
           {posts.length + SEO_CONTENT_PAGES.length} kennisbankpagina's beschikbaar.
         </p>
-      </main>
+      </div>
     </>
   );
 };

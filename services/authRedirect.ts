@@ -44,7 +44,7 @@ export const normalizePostAuthPath = (
 };
 
 export const getSiteOrigin = () => {
-  if (typeof window === 'undefined') return 'https://fainl.com';
+  if (typeof window === 'undefined') return 'https://www.fainl.com';
 
   if (CANONICAL_HOSTS.has(window.location.hostname)) {
     return window.location.origin;

@@ -1,4 +1,11 @@
 {
+  "redirects": [
+    {
+      "source": "/welcome",
+      "destination": "/",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
@@ -37,11 +44,248 @@
           "value": "public, max-age=31536000, immutable"
         }
       ]
+    },
+    {
+      "source": "/admin/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/auth/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/chat/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/dashboard",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/login",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/payment-success",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/beeldraad",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/beeldraad/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/mission",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
     }
   ],
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/nieuws",
+      "destination": "/api/news-page"
+    },
+    {
+      "source": "/nieuws/:slug",
+      "destination": "/api/news-page?slug=:slug"
+    },
+    {
+      "source": "/chat/:threadId",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/beeldraad",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/beeldraad/:projectId",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/mission",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/cookbook",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/dashboard",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/tokens",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/faq",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/contact",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/login",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/auth/callback",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/privacy",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/terms",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ai-voorwaarden",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/cookies",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/verwerkersovereenkomst",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/inclusie",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/payment-success",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/vergelijk/chatgpt-vs-gemini-vs-claude",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/vergelijk/beste-ai-tool-nederland",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/gebruik/juridisch-advies-ai",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/gebruik/marketing-strategie-ai",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/gebruik/hr-recruitment-ai",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/gebruik/financiele-analyse-ai",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/vergelijken/fainl-vs-chatgpt",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/vergelijken/ai-modellen-vergelijken",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/vergelijken/gpt-5-6-vs-claude-sonnet-5-vs-gemini-2-5",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/vergelijken/chatgpt-vs-perplexity-vs-fainl",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/vergelijken/deepseek-vs-chatgpt-vs-fainl",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/modellen/gpt-5-6-sol-uitleg",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/modellen/claude-sonnet-5-voor-zakelijke-analyse",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/modellen/gemini-2-5-pro-vs-flash",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/tutorials/prompt-framework-betere-ai-antwoorden",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/tutorials/ai-modellen-kiezen-voor-bedrijf",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/tutorials/ai-research-workflow-voor-mkb",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/infographics/ai-model-keuzehulp-2026",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/infographics/ai-risico-checklist-voor-teams",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/news",
       "destination": "/index.html"
     }
   ]

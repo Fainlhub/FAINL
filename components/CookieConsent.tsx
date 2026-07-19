@@ -6,17 +6,23 @@ const CONSENT_KEY = "fainl_cookie_consent";
 interface ConsentState {
   decided: boolean;
   analytics: boolean;
+  advertising: boolean;
 }
 
-function fireConsentEvent(analytics: boolean) {
-  // Update Google Consent Mode v2 so GA only fires after explicit accept
+function fireConsentEvent(analytics: boolean, advertising: boolean) {
+  // Keep analytics and advertising denied until the visitor explicitly accepts.
   const g = (window as typeof window & { gtag?: (...a: unknown[]) => void }).gtag;
   if (typeof g === 'function') {
-    g('consent', 'update', { analytics_storage: analytics ? 'granted' : 'denied' });
+    g('consent', 'update', {
+      analytics_storage: analytics ? 'granted' : 'denied',
+      ad_storage: advertising ? 'granted' : 'denied',
+      ad_user_data: advertising ? 'granted' : 'denied',
+      ad_personalization: advertising ? 'granted' : 'denied',
+    });
     if (analytics) g('event', 'page_view'); // send the deferred first page view
   }
   window.dispatchEvent(
-    new CustomEvent("fainl:cookie-consent", { detail: { analytics } }),
+    new CustomEvent("fainl:cookie-consent", { detail: { analytics, advertising } }),
   );
 }
 
@@ -28,11 +34,11 @@ export const CookieConsent: FC = () => {
     const saved = localStorage.getItem(CONSENT_KEY);
     if (saved) {
       const parsed: ConsentState = JSON.parse(saved);
-      if (parsed.decided && parsed.analytics) {
-        // Re-fire consent event for returning visitors who already accepted
-        fireConsentEvent(true);
+      if (parsed.decided && typeof parsed.advertising === "boolean") {
+        fireConsentEvent(parsed.analytics, parsed.advertising);
+        return;
       }
-      return;
+      // Existing consent predates advertising consent and must be renewed.
     }
     // First visit — show banner after short delay
     const timer = setTimeout(() => setVisible(true), 1200);
@@ -40,16 +46,16 @@ export const CookieConsent: FC = () => {
   }, []);
 
   const accept = () => {
-    const state: ConsentState = { decided: true, analytics: true };
+    const state: ConsentState = { decided: true, analytics: true, advertising: true };
     localStorage.setItem(CONSENT_KEY, JSON.stringify(state));
-    fireConsentEvent(true);
+    fireConsentEvent(true, true);
     setVisible(false);
   };
 
   const decline = () => {
-    const state: ConsentState = { decided: true, analytics: false };
+    const state: ConsentState = { decided: true, analytics: false, advertising: false };
     localStorage.setItem(CONSENT_KEY, JSON.stringify(state));
-    fireConsentEvent(false);
+    fireConsentEvent(false, false);
     setVisible(false);
   };
 
@@ -91,9 +97,9 @@ export const CookieConsent: FC = () => {
             voor een correcte werking van deze site. Met jouw toestemming
             plaatsen we ook{" "}
             <strong className="text-black dark:text-white">
-              analytische cookies
+              analytische en advertentiecookies
             </strong>{" "}
-            (Google Analytics) om onze dienst te verbeteren.
+            voor Google Analytics en advertenties op publieke nieuwspagina's.
           </p>
 
           {/* Expandable details */}
@@ -127,6 +133,15 @@ export const CookieConsent: FC = () => {
                 <p className="mt-1">
                   Google Analytics 4 — anoniem paginagebruik. Rechtsgrond:
                   toestemming (Art. 6.1.a AVG). Bewaartermijn: 14 maanden.
+                </p>
+              </div>
+              <div>
+                <span className="font-black text-black dark:text-white uppercase">
+                  Advertenties (alleen met toestemming)
+                </span>
+                <p className="mt-1">
+                  Google AdSense op publieke nieuwspagina's. Reclamevrije
+                  accounts krijgen geen advertentie-units.
                 </p>
               </div>
               <a

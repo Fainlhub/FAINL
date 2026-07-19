@@ -100,6 +100,7 @@ export const NewsAdminPage: FC = () => {
         title="Nieuws review"
         description="Interne FAINL nieuwsreview voor RSS-ingest, AI-drafts en publicatie."
         canonical="/admin/news"
+        noIndex
       />
 
       <main className="max-w-5xl mx-auto px-5 sm:px-8 py-10 md:py-16">

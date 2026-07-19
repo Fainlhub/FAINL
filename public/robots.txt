@@ -1,7 +1,72 @@
 User-agent: *
 Allow: /
+Allow: /api/news-feed
+Allow: /api/news-sitemap
+Disallow: /api/
+Disallow: /admin/
+Disallow: /auth/
+Disallow: /chat/
 Disallow: /dashboard
 Disallow: /login
-Disallow: /account
 Disallow: /payment-success
-Sitemap: https://fainl.com/sitemap.xml
+Disallow: /beeldraad
+Disallow: /mission
+
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /admin/
+Disallow: /auth/
+Disallow: /chat/
+Disallow: /dashboard
+Disallow: /login
+Disallow: /payment-success
+Disallow: /beeldraad
+Disallow: /mission
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /admin/
+Disallow: /auth/
+Disallow: /chat/
+Disallow: /dashboard
+Disallow: /beeldraad
+Disallow: /mission
+
+User-agent: Claude-SearchBot
+Allow: /
+Disallow: /admin/
+Disallow: /auth/
+Disallow: /chat/
+Disallow: /dashboard
+Disallow: /beeldraad
+Disallow: /mission
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /admin/
+Disallow: /auth/
+Disallow: /chat/
+Disallow: /dashboard
+Disallow: /beeldraad
+Disallow: /mission
+
+User-agent: Perplexity-User
+Allow: /
+Disallow: /admin/
+Disallow: /auth/
+Disallow: /chat/
+Disallow: /dashboard
+Disallow: /beeldraad
+Disallow: /mission
+
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+Sitemap: https://www.fainl.com/sitemap.xml
+Sitemap: https://www.fainl.com/api/news-feed

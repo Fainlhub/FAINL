@@ -9,11 +9,15 @@ interface SEOProps {
   ogTitle?: string;
   ogDescription?: string;
   ogImage?: string;
+  ogImageAlt?: string;
+  ogImageWidth?: number;
+  ogImageHeight?: number;
   ogType?: string;
   jsonLd?: object;
+  noIndex?: boolean;
 }
 
-const SITE_URL = "https://fainl.com";
+const SITE_URL = "https://www.fainl.com";
 const DEFAULT_OG_IMAGE = `${SITE_URL}/fainl-logo.png`;
 
 export const SEO: FC<SEOProps> = ({
@@ -24,8 +28,12 @@ export const SEO: FC<SEOProps> = ({
   ogTitle,
   ogDescription,
   ogImage = DEFAULT_OG_IMAGE,
+  ogImageAlt = "FAINL AI Consensus Engine",
+  ogImageWidth,
+  ogImageHeight,
   ogType = "website",
   jsonLd,
+  noIndex = false,
 }) => {
   const fullTitle = title.includes("FAINL") ? title : `${title} | FAINL`;
   const canonicalUrl = `${SITE_URL}${canonical || ""}`;
@@ -36,7 +44,7 @@ export const SEO: FC<SEOProps> = ({
       <title>{fullTitle}</title>
       <meta name="description" content={description} />
       {keywords && <meta name="keywords" content={keywords} />}
-      <meta name="robots" content="index, follow" />
+      <meta name="robots" content={noIndex ? "noindex, nofollow, noarchive" : "index, follow, max-image-preview:large"} />
       {canonical && <link rel="canonical" href={canonicalUrl} />}
 
       {/* ── Open Graph ──────────────────────────── */}
@@ -46,9 +54,9 @@ export const SEO: FC<SEOProps> = ({
       <meta property="og:title" content={ogTitle || fullTitle} />
       <meta property="og:description" content={ogDescription || description} />
       <meta property="og:image" content={ogImage} />
-      <meta property="og:image:width" content="1200" />
-      <meta property="og:image:height" content="630" />
-      <meta property="og:image:alt" content="FAINL — AI Consensus Engine" />
+      {ogImageWidth && <meta property="og:image:width" content={String(ogImageWidth)} />}
+      {ogImageHeight && <meta property="og:image:height" content={String(ogImageHeight)} />}
+      <meta property="og:image:alt" content={ogImageAlt} />
       <meta property="og:locale" content="nl_NL" />
 
       {/* ── Twitter Card ────────────────────────── */}
